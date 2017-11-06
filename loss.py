@@ -17,3 +17,8 @@ class CapsuleLoss(nn.Module):
         reconstruction_loss = self.reconstruction_loss(reconstructions, images)
 
         return (margin_loss + 0.0005 * reconstruction_loss) / images.size(0)
+
+
+if __name__ == "__main__":
+    digit_loss = CapsuleLoss()
+    print(digit_loss)

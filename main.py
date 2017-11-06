@@ -4,7 +4,6 @@ from torch.autograd import Variable
 from torch.optim import Adam
 from torchnet.engine import Engine
 from torchnet.logger import VisdomPlotLogger, VisdomLogger
-from torchvision.datasets.mnist import MNIST
 from torchvision.utils import make_grid
 from tqdm import tqdm
 
@@ -12,15 +11,6 @@ import config
 import utils
 from capsnet import CapsuleNet
 from loss import CapsuleLoss
-
-
-def get_iterator(mode):
-    dataset = MNIST(root='./data', download=True, train=mode)
-    data = getattr(dataset, 'train_data' if mode else 'test_data')
-    labels = getattr(dataset, 'train_labels' if mode else 'test_labels')
-    tensor_dataset = tnt.dataset.TensorDataset([data, labels])
-
-    return tensor_dataset.parallel(batch_size=config.BATCH_SIZE, num_workers=4, shuffle=mode)
 
 
 def processor(sample):
@@ -47,14 +37,14 @@ def processor(sample):
     return loss, classes
 
 
+def on_sample(state):
+    state['sample'].append(state['train'])
+
+
 def reset_meters():
     meter_accuracy.reset()
     meter_loss.reset()
     confusion_meter.reset()
-
-
-def on_sample(state):
-    state['sample'].append(state['train'])
 
 
 def on_forward(state):
@@ -77,7 +67,7 @@ def on_end_epoch(state):
 
     reset_meters()
 
-    engine.test(processor, get_iterator(False))
+    engine.test(processor, utils.get_iterator(False))
     test_loss_logger.log(state['epoch'], meter_loss.value()[0])
     test_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
     confusion_logger.log(confusion_meter.value())
@@ -89,7 +79,7 @@ def on_end_epoch(state):
 
     # Reconstruction visualization.
 
-    test_sample = next(iter(get_iterator(False)))
+    test_sample = next(iter(utils.get_iterator(False)))
 
     ground_truth = (test_sample[0].unsqueeze(1).float() / 255.0)
     if torch.cuda.is_available():
@@ -122,7 +112,7 @@ if __name__ == "__main__":
     train_error_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
     test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
-    confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion matrix',
+    confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
                                                      'columnnames': list(range(config.NUM_CLASSES)),
                                                      'rownames': list(range(config.NUM_CLASSES))})
     ground_truth_logger = VisdomLogger('image', opts={'title': 'Ground Truth'})
@@ -135,4 +125,4 @@ if __name__ == "__main__":
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, get_iterator(True), maxepoch=config.NUM_EPOCHS, optimizer=optimizer)
+    engine.train(processor, utils.get_iterator(True), maxepoch=config.NUM_EPOCHS, optimizer=optimizer)
