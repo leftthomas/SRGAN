@@ -8,7 +8,7 @@ from torchvision.datasets.mnist import MNIST
 from torchvision.utils import make_grid
 from tqdm import tqdm
 
-import Config
+import config
 import utils
 from capsnet import CapsuleNet
 from loss import CapsuleLoss
@@ -20,7 +20,7 @@ def get_iterator(mode):
     labels = getattr(dataset, 'train_labels' if mode else 'test_labels')
     tensor_dataset = tnt.dataset.TensorDataset([data, labels])
 
-    return tensor_dataset.parallel(batch_size=Config.BATCH_SIZE, num_workers=4, shuffle=mode)
+    return tensor_dataset.parallel(batch_size=config.BATCH_SIZE, num_workers=4, shuffle=mode)
 
 
 def processor(sample):
@@ -29,7 +29,7 @@ def processor(sample):
     data = utils.augmentation(data.unsqueeze(1).float() / 255.0)
     labels = torch.LongTensor(labels)
 
-    labels = torch.sparse.torch.eye(Config.NUM_CLASSES).index_select(dim=0, index=labels)
+    labels = torch.sparse.torch.eye(config.NUM_CLASSES).index_select(dim=0, index=labels)
 
     data = Variable(data)
     labels = Variable(labels)
@@ -99,9 +99,9 @@ def on_end_epoch(state):
     reconstruction = reconstructions.cpu().view_as(ground_truth).data
 
     ground_truth_logger.log(
-        make_grid(ground_truth, nrow=int(Config.BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
+        make_grid(ground_truth, nrow=int(config.BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
     reconstruction_logger.log(
-        make_grid(reconstruction, nrow=int(Config.BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
+        make_grid(reconstruction, nrow=int(config.BATCH_SIZE ** 0.5), normalize=True, range=(0, 1)).numpy())
 
 
 if __name__ == "__main__":
@@ -116,15 +116,15 @@ if __name__ == "__main__":
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
     meter_accuracy = tnt.meter.ClassErrorMeter(accuracy=True)
-    confusion_meter = tnt.meter.ConfusionMeter(Config.NUM_CLASSES, normalized=True)
+    confusion_meter = tnt.meter.ConfusionMeter(config.NUM_CLASSES, normalized=True)
 
     train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
     train_error_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
     test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion matrix',
-                                                     'columnnames': list(range(Config.NUM_CLASSES)),
-                                                     'rownames': list(range(Config.NUM_CLASSES))})
+                                                     'columnnames': list(range(config.NUM_CLASSES)),
+                                                     'rownames': list(range(config.NUM_CLASSES))})
     ground_truth_logger = VisdomLogger('image', opts={'title': 'Ground Truth'})
     reconstruction_logger = VisdomLogger('image', opts={'title': 'Reconstruction'})
 
@@ -135,4 +135,4 @@ if __name__ == "__main__":
     engine.hooks['on_start_epoch'] = on_start_epoch
     engine.hooks['on_end_epoch'] = on_end_epoch
 
-    engine.train(processor, get_iterator(True), maxepoch=Config.NUM_EPOCHS, optimizer=optimizer)
+    engine.train(processor, get_iterator(True), maxepoch=config.NUM_EPOCHS, optimizer=optimizer)

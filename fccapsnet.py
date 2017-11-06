@@ -7,9 +7,10 @@ import config
 from capsule import CapsuleLayer
 
 
-class CapsuleNet(nn.Module):
+# TODO
+class FCCapsuleNet(nn.Module):
     def __init__(self):
-        super(CapsuleNet, self).__init__()
+        super(FCCapsuleNet, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=256, kernel_size=9, stride=1)
         self.primary_capsules = CapsuleLayer(num_capsules=8, num_route_nodes=-1, in_channels=256, out_channels=32,
@@ -46,8 +47,3 @@ class CapsuleNet(nn.Module):
         reconstructions = self.decoder((x * y[:, :, None]).view(x.size(0), -1))
 
         return classes, reconstructions
-
-
-if __name__ == "__main__":
-    model = CapsuleNet()
-    print(model)
