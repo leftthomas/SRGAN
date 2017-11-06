@@ -63,7 +63,7 @@ def on_end_epoch(state):
         state['epoch'], meter_loss.value()[0], meter_accuracy.value()[0]))
 
     train_loss_logger.log(state['epoch'], meter_loss.value()[0])
-    train_error_logger.log(state['epoch'], meter_accuracy.value()[0])
+    train_accuracy_logger.log(state['epoch'], meter_accuracy.value()[0])
 
     reset_meters()
 
@@ -77,7 +77,7 @@ def on_end_epoch(state):
 
     torch.save(model.state_dict(), 'epochs/epoch_%d.pt' % state['epoch'])
 
-    # Reconstruction visualization.
+    # reconstruction visualization
 
     test_sample = next(iter(utils.get_iterator(False)))
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     confusion_meter = tnt.meter.ConfusionMeter(config.NUM_CLASSES, normalized=True)
 
     train_loss_logger = VisdomPlotLogger('line', opts={'title': 'Train Loss'})
-    train_error_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
+    train_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Train Accuracy'})
     test_loss_logger = VisdomPlotLogger('line', opts={'title': 'Test Loss'})
     test_accuracy_logger = VisdomPlotLogger('line', opts={'title': 'Test Accuracy'})
     confusion_logger = VisdomLogger('heatmap', opts={'title': 'Confusion Matrix',
