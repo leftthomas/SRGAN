@@ -23,15 +23,17 @@ class CapsuleLayer(nn.Module):
                 [nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=0) for _ in
                  range(num_capsules)])
 
-    def squash(self, tensor, dim=-1):
+    @staticmethod
+    def squash(tensor, dim=-1):
         squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
         scale = squared_norm / (1 + squared_norm)
         return scale * tensor / torch.sqrt(squared_norm)
 
-    def softmax(self, input, dim=1):
-        transposed_input = input.transpose(dim, len(input.size()) - 1)
+    @staticmethod
+    def softmax(tensor, dim=1):
+        transposed_input = tensor.transpose(dim, len(tensor.size()) - 1)
         softmaxed_output = F.softmax(transposed_input.contiguous().view(-1, transposed_input.size(-1)))
-        return softmaxed_output.view(*transposed_input.size()).transpose(dim, len(input.size()) - 1)
+        return softmaxed_output.view(*transposed_input.size()).transpose(dim, len(tensor.size()) - 1)
 
     def forward(self, x):
         if self.num_route_nodes != -1:
@@ -47,7 +49,6 @@ class CapsuleLayer(nn.Module):
                 if i != self.num_iterations - 1:
                     delta_logits = (priors * outputs).sum(dim=-1, keepdim=True)
                     logits = logits + delta_logits
-                    # return logits
         else:
             outputs = [capsule(x).view(x.size(0), -1, 1) for capsule in self.capsules]
             outputs = torch.cat(outputs, dim=-1)

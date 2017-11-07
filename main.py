@@ -17,9 +17,8 @@ def processor(sample):
     data, labels, training = sample
 
     data = utils.augmentation(data.unsqueeze(1).float() / 255.0)
-    labels = torch.LongTensor(labels)
-
-    labels = torch.sparse.torch.eye(config.NUM_CLASSES).index_select(dim=0, index=labels)
+    # labels = torch.LongTensor(labels)
+    labels = torch.eye(config.NUM_CLASSES).index_select(dim=0, index=labels)
 
     data = Variable(data)
     labels = Variable(labels)
@@ -48,8 +47,8 @@ def reset_meters():
 
 
 def on_forward(state):
-    meter_accuracy.add(state['output'].data, torch.LongTensor(state['sample'][1]))
-    confusion_meter.add(state['output'].data, torch.LongTensor(state['sample'][1]))
+    meter_accuracy.add(state['output'].data, state['sample'][1])
+    confusion_meter.add(state['output'].data, state['sample'][1])
     meter_loss.add(state['loss'].data[0])
 
 
