@@ -3,12 +3,10 @@ import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Variable
 
-import config
-
 
 class CapsuleLayer(nn.Module):
     def __init__(self, num_capsules, num_route_nodes, in_channels, out_channels, kernel_size=None, stride=None,
-                 num_iterations=config.NUM_ROUTING_ITERATIONS):
+                 num_iterations=3):
         super(CapsuleLayer, self).__init__()
 
         self.num_route_nodes = num_route_nodes
@@ -61,6 +59,6 @@ if __name__ == "__main__":
     primary_capsules = CapsuleLayer(num_capsules=8, num_route_nodes=-1, in_channels=256, out_channels=32,
                                     kernel_size=9, stride=2)
     print(primary_capsules)
-    digit_capsules = CapsuleLayer(num_capsules=config.NUM_CLASSES, num_route_nodes=32 * 6 * 6, in_channels=8,
+    digit_capsules = CapsuleLayer(num_capsules=10, num_route_nodes=32 * 6 * 6, in_channels=8,
                                   out_channels=16)
     print(digit_capsules)
