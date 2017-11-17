@@ -91,14 +91,14 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     loss_network = loss_network.cuda()
     # criterion = ContentLoss(loss_network)
-    criterion = torch.nn.MSELoss(size_average=False)
+    criterion = torch.nn.MSELoss()
     if torch.cuda.is_available():
         model = model.cuda()
         criterion = criterion.cuda()
 
     print('# parameters:', sum(param.numel() for param in model.parameters()))
 
-    optimizer = optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
     # scheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)
 
     engine = Engine()
