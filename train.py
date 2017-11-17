@@ -91,7 +91,7 @@ if __name__ == "__main__":
     # if torch.cuda.is_available():
     #     loss_network = loss_network.cuda()
     # criterion = ContentLoss(loss_network)
-    criterion = torch.nn.MSELoss()
+    criterion = torch.nn.MSELoss(size_average=False)
     if torch.cuda.is_available():
         model = model.cuda()
         criterion = criterion.cuda()
