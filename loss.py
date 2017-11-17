@@ -38,7 +38,7 @@ class ContentLoss(nn.Module):
     def forward(self, input, target):
         features_input = self.loss_network(input)
         features_target = self.loss_network(target)
-        return torch.mean((features_input - features_target) ** 2)
+        return torch.mean((features_input - features_target) ** 2) + 3 * F.mse_loss(input, target)
 
 
 if __name__ == "__main__":
