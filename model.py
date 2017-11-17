@@ -13,9 +13,9 @@ class Net(nn.Module):
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
     def forward(self, x):
-        x = F.leaky_relu(self.conv1(x))
-        x = F.leaky_relu(self.conv2(x))
-        x = F.leaky_relu(self.conv3(x))
+        x = F.selu(self.conv1(x))
+        x = F.selu(self.conv2(x))
+        x = F.selu(self.conv3(x))
         x = F.sigmoid(self.pixel_shuffle(self.conv4(x)))
         return x
 
