@@ -12,7 +12,6 @@ from torchnet.logger import VisdomPlotLogger
 from tqdm import tqdm
 
 from data_utils import DatasetFromFolder
-from loss import vgg16_relu2_2, ContentLoss
 from model import Net
 from psnrmeter import PSNRMeter
 
@@ -88,10 +87,11 @@ if __name__ == "__main__":
     val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
 
     model = Net(upscale_factor=UPSCALE_FACTOR)
-    loss_network = vgg16_relu2_2()
-    if torch.cuda.is_available():
-        loss_network = loss_network.cuda()
-    criterion = ContentLoss(loss_network)
+    # loss_network = vgg16_relu2_2()
+    # if torch.cuda.is_available():
+    #     loss_network = loss_network.cuda()
+    # criterion = ContentLoss(loss_network)
+    criterion = torch.nn.MSELoss()
     if torch.cuda.is_available():
         model = model.cuda()
         criterion = criterion.cuda()
