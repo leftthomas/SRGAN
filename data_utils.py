@@ -20,15 +20,13 @@ def calculate_valid_crop_size(crop_size, upscale_factor):
 def input_transform(crop_size, upscale_factor):
     return Compose([
         CenterCrop(crop_size),
-        Scale(crop_size // upscale_factor),
-        ToTensor(),
+        Scale(crop_size // upscale_factor, interpolation=Image.BICUBIC)
     ])
 
 
 def target_transform(crop_size):
     return Compose([
-        CenterCrop(crop_size),
-        ToTensor(),
+        CenterCrop(crop_size)
     ])
 
 
@@ -82,10 +80,8 @@ def generate_dataset(data_type, upscale_factor):
         image = lr_transform(image)
         target = hr_transform(target)
 
-        out_img = ToPILImage()(image)
-        out_target = ToPILImage()(target)
-        out_img.save(image_path + '/' + image_name)
-        out_target.save(target_path + '/' + image_name)
+        image.save(image_path + '/' + image_name)
+        target.save(target_path + '/' + image_name)
 
 
 if __name__ == "__main__":
