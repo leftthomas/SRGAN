@@ -49,7 +49,7 @@ python -m visdom.server & python train.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
---num_epochs          super resolution epochs number [default value is 200]
+--num_epochs          super resolution epochs number [default value is 100]
 ```
 Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
 
@@ -65,7 +65,7 @@ python test.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
---model_name          super resolution model name [default value is epoch_3_200.pt]
+--model_name          super resolution model name [default value is epoch_3_100.pt]
 ```
 The output high resolution images are on `results` directory.
 
