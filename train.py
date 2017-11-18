@@ -83,8 +83,8 @@ if __name__ == "__main__":
                                   target_transform=transforms.ToTensor())
     val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                                 target_transform=transforms.ToTensor())
-    train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=50, shuffle=True)
-    val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=50, shuffle=False)
+    train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=32, shuffle=True)
+    val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=32, shuffle=False)
 
     model = Net(upscale_factor=UPSCALE_FACTOR)
     loss_network = vgg16_relu3_3()
