@@ -46,7 +46,7 @@ def on_forward(state):
 
 def on_start_epoch(state):
     reset_meters()
-    # scheduler.step()
+    scheduler.step()
     state['iterator'] = tqdm(state['iterator'])
 
 
@@ -96,8 +96,8 @@ if __name__ == "__main__":
 
     print('# parameters:', sum(param.numel() for param in model.parameters()))
 
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    # scheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=1e-2)
+    scheduler = MultiStepLR(optimizer, milestones=[30, 80], gamma=0.1)
 
     engine = Engine()
     meter_loss = tnt.meter.AverageValueMeter()
