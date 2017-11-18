@@ -1,5 +1,5 @@
 import argparse
-from loss import ContentLoss, vgg16_relu2_2
+from loss import ContentLoss, vgg16_relu3_3
 import torch
 import torch.optim as optim
 import torchnet as tnt
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
 
     model = Net(upscale_factor=UPSCALE_FACTOR)
-    loss_network = vgg16_relu2_2()
+    loss_network = vgg16_relu3_3()
     if torch.cuda.is_available():
         loss_network = loss_network.cuda()
     criterion = ContentLoss(loss_network)

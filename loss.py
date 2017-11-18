@@ -21,13 +21,13 @@ class CapsuleLoss(nn.Module):
         return (margin_loss + 0.0005 * reconstruction_loss) / images.size(0)
 
 
-def vgg16_relu2_2():
+def vgg16_relu3_3():
     vgg = vgg16(pretrained=True)
-    relu2_2 = nn.Sequential(*list(vgg.features)[:9])
-    for param in relu2_2.parameters():
+    relu3_3 = nn.Sequential(*list(vgg.features)[:16])
+    for param in relu3_3.parameters():
         param.requires_grad = False
-    relu2_2.eval()
-    return relu2_2
+    relu3_3.eval()
+    return relu3_3
 
 
 class ContentLoss(nn.Module):
