@@ -110,7 +110,7 @@ for epoch in range(NUM_EPOCHS):
         sr = netG(lr).data.cpu()
         utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch + 1, index))
         mse = F.mse_loss(sr, val_target)
-        psnr = 10 * log10(1 / mse)
+        psnr = 10 * log10(1 / mse.data[0])
         val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % psnr)
         index += 1
 
