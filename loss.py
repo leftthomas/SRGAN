@@ -30,15 +30,23 @@ def vgg16_relu2_2():
     return relu2_2
 
 
-class ContentLoss(nn.Module):
+class GeneratorLoss(nn.Module):
     def __init__(self, loss_network):
-        super(ContentLoss, self).__init__()
+        super(GeneratorLoss, self).__init__()
         self.loss_network = loss_network
+        self.adversarial_loss = nn.BCELoss()
+        self.l1_loss = nn.L1Loss()
 
-    def forward(self, input, target):
-        features_input = self.loss_network(input)
-        features_target = self.loss_network(target)
-        return torch.mean((features_input - features_target) ** 2)
+    def forward(self, out_images, target_images, out_labels, target_labels):
+        # Content Loss
+        features_input = self.loss_network(out_images)
+        features_target = self.loss_network(target_images)
+        content_loss = torch.mean((features_input - features_target) ** 2)
+        # Adversarial Loss
+        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        # L1 Loss
+        l1_loss = self.l1_loss(out_images, target_images)
+        return 145 * content_loss + 170 * l1_loss + adversarial_loss
 
 
 if __name__ == "__main__":
