@@ -25,8 +25,10 @@ val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_tra
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
 val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
 
-netG = Generator()
+netG = Generator(UPSCALE_FACTOR)
+print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
+print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 criterion = nn.BCELoss()
 if torch.cuda.is_available():
     netD.cuda()
