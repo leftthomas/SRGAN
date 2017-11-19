@@ -36,7 +36,7 @@ fixed_noise = Variable(fixed_noise)
 optimizerD = optim.Adam(netD.parameters())
 optimizerG = optim.Adam(netG.parameters())
 
-for epoch in range(100):
+for epoch in range(1000):
     for i, data in enumerate(dataloader, 0):
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
