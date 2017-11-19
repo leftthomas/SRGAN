@@ -43,8 +43,8 @@ if torch.cuda.is_available():
     generator_criterion.cuda()
     discriminator_criterion.cuda()
 
-optimizerD = optim.Adam(netD.parameters())
-optimizerG = optim.Adam(netG.parameters())
+optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
+optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 for epoch in range(NUM_EPOCHS):
     train_bar = tqdm(train_loader)
@@ -78,17 +78,15 @@ for epoch in range(NUM_EPOCHS):
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
-        netD.zero_grad()
-        d_loss.backward()
+        optimizerD.zero_grad()
+        d_loss.backward(retain_variables=True)
         optimizerD.step()
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         # compute loss of fake_img
-        fake_img = netG(z)
-        output = netD(fake_img)
-        g_loss = generator_criterion(fake_img, real_img, output, real_label)
+        g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
 
         # bp and optimize
         optimizerG.zero_grad()
