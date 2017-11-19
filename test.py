@@ -14,7 +14,7 @@ from model import Net
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
     parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
-    parser.add_argument('--model_name', default='epoch_3_100.pt', type=str, help='super resolution model name')
+    parser.add_argument('--model_name', default='netG_epoch_3_100.pth', type=str, help='super resolution model name')
     opt = parser.parse_args()
 
     UPSCALE_FACTOR = opt.upscale_factor
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
-    for image_name in tqdm(images_name, desc='convert LR images to HR images'):
+    for image_name in tqdm(images_name, desc='convert LR images to SR images'):
 
         image = Image.open(path + image_name)
         image = Variable(ToTensor()(image))

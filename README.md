@@ -8,10 +8,6 @@ A PyTorch implementation of FCCapsNet based on IJCAI2018 paper [xxxxx](xxxxx)
 conda install pytorch torchvision -c soumith
 conda install pytorch torchvision cuda80 -c soumith # install it if you have installed cuda
 ```
-- PyTorchNet
-```
-pip install git+https://github.com/pytorch/tnt.git@master
-```
 - tqdm
 ```
 pip install tqdm
@@ -45,19 +41,13 @@ Download the dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then ext
 ### Train
 
 ```
-python -m visdom.server & python train.py
+python train.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
 --num_epochs          super resolution epochs number [default value is 100]
 ```
-Visdom now can be accessed by going to `127.0.0.1:8097` in your browser, or your own host address if specified.
-
-If the above does not work, try using an SSH tunnel to your server by adding the following line to your local `~/.ssh/config` :
-`LocalForward 127.0.0.1:8097 127.0.0.1:8097`.
-
-Maybe if you are in China, you should download the static resources from [here](https://pan.baidu.com/s/1hr80UbU), and
-put them on `~/anaconda3/lib/python3.6/site-packages/visdom/static/`.
+The output val super resolution images are on `images` directory.
 
 ### Test
 ```
@@ -65,36 +55,11 @@ python test.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 3]
---model_name          super resolution model name [default value is epoch_3_100.pt]
+--model_name          super resolution model name [default value is netG_epoch_3_100.pth]
 ```
-The output high resolution images are on `results` directory.
+The output super resolution images are on `results` directory.
 
 ## Benchmarks
-Highest accuracy was 99.57% after 30 epochs. The model may achieve a higher accuracy as shown by the trend of the loss/accuracy graphs below.
-<table>
-  <tr>
-    <td>
-     <img src="results/train_loss.png"/>
-    </td>
-    <td>
-     <img src="results/test_loss.png"/>
-    </td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td>
-     <img src="results/train_acc.png"/>
-    </td>
-    <td>
-     <img src="results/test_acc.png"/>
-    </td>
-  </tr>
-</table>
-
-The confusion matrix of the digit numbers are showed below.
-<img src="results/confusion_matrix.png"/>
-
 The reconstructions of the digit numbers are showed at right and the ground truth at left.
 <table>
   <tr>
@@ -107,5 +72,6 @@ The reconstructions of the digit numbers are showed at right and the ground trut
   </tr>
 </table>
 
-Default PyTorch Adam optimizer hyperparameters were used with no learning rate scheduling. Epochs with batch size of 100 takes ~2 minutes on a NVIDIA GTX 1070 GPU. 
+Default PyTorch Adam optimizer hyperparameters were used with no learning rate scheduling. 
+Epochs with batch size of 100 takes ~2 minutes on a NVIDIA GTX 1070 GPU. 
 
