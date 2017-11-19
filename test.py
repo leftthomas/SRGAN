@@ -9,7 +9,7 @@ from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
 
 from data_utils import is_image_file
-from model import Net
+from model import Generator
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
     images_name = [x for x in listdir(path) if is_image_file(x)]
-    model = Net(upscale_factor=UPSCALE_FACTOR)
+    model = Generator(upscale_factor=UPSCALE_FACTOR)
     if torch.cuda.is_available():
         model = model.cuda()
     model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
