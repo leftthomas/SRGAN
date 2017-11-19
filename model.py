@@ -37,11 +37,7 @@ class Generator(nn.Module):
             nn.BatchNorm2d(32 * 2),
             nn.ReLU(True),
             # state size. (32*2) x 16 x 16
-            nn.ConvTranspose2d(32 * 2, 32, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(32),
-            nn.ReLU(True),
-            # state size. (32) x 32 x 32
-            nn.ConvTranspose2d(32, 3, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(32 * 2, 3, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. (3) x 32 x 32
         )
@@ -58,20 +54,20 @@ class Discriminator(nn.Module):
             # input is (3) x 32 x 32
             nn.Conv2d(3, 32, 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (32) x 32 x 32
+            # state size. (32) x 16 x 16
             nn.Conv2d(32, 32 * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(32 * 2),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (32*2) x 16 x 16
+            # state size. (32*2) x 8 x 8
             nn.Conv2d(32 * 2, 32 * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(32 * 4),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (32*4) x 8 x 8
+            # state size. (32*4) x 4 x 4
             nn.Conv2d(32 * 4, 32 * 8, 4, 2, 1, bias=False),
             nn.BatchNorm2d(32 * 8),
             nn.LeakyReLU(0.2, inplace=True),
-            # state size. (32*8) x 4 x 4
-            nn.Conv2d(32 * 8, 1, 4, 1, 0, bias=False),
+            # state size. (32*8) x 2 x 2
+            nn.Conv2d(32 * 8, 1, 2, 1, 0, bias=False),
             nn.Sigmoid()
         )
 
