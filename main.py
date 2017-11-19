@@ -7,12 +7,8 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 from model import Discriminator, Generator
 
-dataset = dset.ImageFolder(root='data', transform=transforms.Compose([
-    transforms.Scale(64),
-    transforms.CenterCrop(64),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]))
-
+dataset = dset.CIFAR10(root='data', download=True, transform=transforms.Compose(
+    [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]))
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True, num_workers=4)
 
 netG = Generator()
@@ -20,7 +16,7 @@ netD = Discriminator()
 
 criterion = nn.BCELoss()
 
-input = torch.FloatTensor(64, 3, 64, 64)
+input = torch.FloatTensor(64, 3, 32, 32)
 noise = torch.FloatTensor(64, 100, 1, 1)
 fixed_noise = torch.FloatTensor(64, 100, 1, 1).normal_(0, 1)
 label = torch.FloatTensor(64)

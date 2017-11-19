@@ -1,5 +1,5 @@
 import torch.nn as nn
-import torch.nn.fu3tional as F
+import torch.nn.functional as F
 
 
 class Net(nn.Module):
