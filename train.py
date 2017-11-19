@@ -1,4 +1,5 @@
 import argparse
+import os
 from math import log10
 
 import torch.nn as nn
@@ -97,15 +98,17 @@ for epoch in range(NUM_EPOCHS):
                                            fake_scores))
 
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
     val_bar = tqdm(val_loader)
     index = 1
     for val_data, val_target in val_bar:
-        utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch, index))
+        utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch + 1, index))
         lr = Variable(val_data)
         if torch.cuda.is_available():
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
-        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
+        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch + 1, index))
         mse = F.mse_loss(sr, val_target)
         psnr = 10 * log10(1 / mse)
         val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % psnr)
