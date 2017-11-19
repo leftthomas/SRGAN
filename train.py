@@ -79,7 +79,7 @@ for epoch in range(NUM_EPOCHS):
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
         optimizerD.zero_grad()
-        d_loss.backward()
+        d_loss.backward(retain_graph=True)
         optimizerD.step()
 
         ############################
