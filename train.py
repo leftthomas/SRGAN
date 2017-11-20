@@ -23,6 +23,7 @@ opt = parser.parse_args()
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
 G_THRESHOLD = 0.1
+G_STOP_THRESHOLD = 100
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
@@ -94,7 +95,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         ############################
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
-        while (fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first:
+        index = 1
+        while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
+            index <= G_STOP_THRESHOLD):
             # compute loss of fake_img
             # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
             g_loss = generator_criterion(fake_out, real_label)
@@ -106,6 +109,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             fake_out = netD(fake_img)
             fake_scores = fake_out.data.sum()
             g_update_first = False
+            index += 1
 
         g_loss = generator_criterion(fake_out, real_label)
         running_g_loss += g_loss.data[0] * batch_size
