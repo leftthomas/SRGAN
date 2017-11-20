@@ -34,7 +34,8 @@ netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
-generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
+# generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
+generator_criterion = nn.BCELoss()
 discriminator_criterion = nn.BCELoss()
 if torch.cuda.is_available():
     netD.cuda()
@@ -94,7 +95,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         # compute loss of fake_img
-        g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
+        # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
+        g_loss = generator_criterion(fake_out, real_label)
         running_g_loss += g_loss.data[0] * batch_size
         # bp and optimize
         optimizerG.zero_grad()
