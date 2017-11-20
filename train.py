@@ -37,7 +37,7 @@ print('# generator parameters:', sum(param.numel() for param in netG.parameters(
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 # generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
-generator_criterion = nn.BCELoss()
+generator_criterion = GeneratorLoss()
 discriminator_criterion = nn.BCELoss()
 if torch.cuda.is_available():
     netD.cuda()
@@ -99,8 +99,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
             index <= G_STOP_THRESHOLD):
             # compute loss of fake_img
-            # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
-            g_loss = generator_criterion(fake_out, real_label)
+            g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
             # bp and optimize
             optimizerG.zero_grad()
             g_loss.backward()
@@ -111,7 +110,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             g_update_first = False
             index += 1
 
-        g_loss = generator_criterion(fake_out, real_label)
+        g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
         running_g_loss += g_loss.data[0] * batch_size
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
         d_loss = d_loss_real + d_loss_fake
@@ -145,7 +144,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         batch_mse = ((sr - val_target) ** 2).mean()
         valing_mse += batch_mse * batch_size
         valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
-        val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % valing_psnr)
+        val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f dB' % valing_psnr)
         index += 1
 
     # save model parameters
