@@ -3,7 +3,6 @@ import os
 from math import log10
 
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 import torchvision.transforms as transforms
@@ -48,8 +47,12 @@ optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 for epoch in range(1, NUM_EPOCHS + 1):
     train_bar = tqdm(train_loader)
+    running_real_scores = 0
+    running_fake_scores = 0
+    running_batch_sizes = 0
     for data, target in train_bar:
         batch_size = data.size(0)
+        running_batch_sizes += batch_size
         real_label = Variable(torch.ones(batch_size))
         fake_label = Variable(torch.zeros(batch_size))
 
@@ -64,7 +67,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # compute loss of real_img
         real_out = netD(real_img)
         d_loss_real = discriminator_criterion(real_out, real_label)
-        real_scores = real_out.data.mean()
+        real_scores = real_out.data.sum()
+        running_real_scores += real_scores
 
         # compute loss of fake_img
         z = Variable(data)
@@ -74,7 +78,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_img = netG(z)
         fake_out = netD(fake_img)
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
-        fake_scores = fake_out.data.mean()
+        fake_scores = fake_out.data.sum()
+        running_fake_scores += fake_scores
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
@@ -95,24 +100,29 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f'
                                        % (
-                                           epoch, NUM_EPOCHS, d_loss.data[0], g_loss.data[0], real_scores,
-                                           fake_scores))
+                                           epoch, NUM_EPOCHS, d_loss.data[0], g_loss.data[0],
+                                           running_real_scores / running_batch_sizes,
+                                           running_fake_scores / running_batch_sizes))
 
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     val_bar = tqdm(val_loader)
     index = 1
+    valing_mse = 0
+    valing_batch_sizes = 0
     for val_data, val_target in val_bar:
+        valing_batch_sizes += val_data.size(0)
         utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch, index))
         lr = Variable(val_data)
         if torch.cuda.is_available():
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
         utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
-        mse = F.mse_loss(sr, val_target)
-        psnr = 10 * log10(1 / mse.data[0])
-        val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % psnr)
+        batch_mse = ((sr - val_target) ** 2).data.sum()
+        valing_mse += batch_mse
+        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
+        val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % valing_psnr)
         index += 1
 
     # save model parameters
