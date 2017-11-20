@@ -98,7 +98,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         ###########################
         index = 1
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
-            index <= G_STOP_THRESHOLD):
+                    index <= G_STOP_THRESHOLD):
             # compute loss of fake_img
             g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
             # bp and optimize
@@ -141,7 +141,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         if torch.cuda.is_available():
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
-        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
+        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
         batch_mse = ((sr - val_target) ** 2).mean()
         valing_mse += batch_mse * batch_size
         valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))

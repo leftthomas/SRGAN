@@ -46,7 +46,7 @@ class GeneratorLoss(nn.Module):
         adversarial_loss = self.adversarial_loss(out_labels, target_labels)
         # L1 Loss
         l1_loss = self.l1_loss(out_images, target_images)
-        return 145 * content_loss + 170 * l1_loss + adversarial_loss
+        return 100 * content_loss + 20 * l1_loss + 4 * adversarial_loss
 
 
 if __name__ == "__main__":
