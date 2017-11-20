@@ -119,7 +119,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
         utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
-        batch_mse = ((sr - val_target) ** 2).data.sum()
+        batch_mse = ((sr - val_target) ** 2).sum()
         valing_mse += batch_mse
         valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
         val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % valing_psnr)
