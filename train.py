@@ -46,7 +46,7 @@ if torch.cuda.is_available():
 optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-for epoch in range(NUM_EPOCHS):
+for epoch in range(1, NUM_EPOCHS + 1):
     train_bar = tqdm(train_loader)
     for data, target in train_bar:
         batch_size = data.size(0)
@@ -95,7 +95,7 @@ for epoch in range(NUM_EPOCHS):
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f'
                                        % (
-                                           epoch + 1, NUM_EPOCHS, d_loss.data[0], g_loss.data[0], real_scores,
+                                           epoch, NUM_EPOCHS, d_loss.data[0], g_loss.data[0], real_scores,
                                            fake_scores))
 
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
@@ -104,12 +104,12 @@ for epoch in range(NUM_EPOCHS):
     val_bar = tqdm(val_loader)
     index = 1
     for val_data, val_target in val_bar:
-        utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch + 1, index))
+        utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch, index))
         lr = Variable(val_data)
         if torch.cuda.is_available():
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
-        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch + 1, index))
+        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
         mse = F.mse_loss(sr, val_target)
         psnr = 10 * log10(1 / mse.data[0])
         val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % psnr)
