@@ -22,8 +22,8 @@ opt = parser.parse_args()
 
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
-G_THRESHOLD = 0.1
-G_STOP_THRESHOLD = 100
+G_THRESHOLD = 0.2
+G_STOP_THRESHOLD = 10
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
