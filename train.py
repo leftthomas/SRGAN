@@ -31,8 +31,8 @@ train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input
                               target_transform=transforms.ToTensor())
 val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                             target_transform=transforms.ToTensor())
-train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=32, shuffle=True)
-val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=32, shuffle=False)
+train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=16, shuffle=True)
+val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=16, shuffle=False)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))

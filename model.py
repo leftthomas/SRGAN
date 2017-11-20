@@ -6,17 +6,20 @@ class Generator(nn.Module):
     def __init__(self, upscale_factor):
         super(Generator, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 64, (5, 5), (1, 1), (2, 2))
-        self.conv2 = nn.Conv2d(64, 64, (3, 3), (1, 1), (1, 1))
-        self.conv3 = nn.Conv2d(64, 32, (3, 3), (1, 1), (1, 1))
-        self.conv4 = nn.Conv2d(32, 3 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1))
+        self.conv1 = nn.Conv2d(3, 32, (5, 5), (1, 1), (2, 2))
+        self.conv2 = nn.Conv2d(32, 64, (3, 3), (1, 1), (1, 1))
+        self.conv3 = nn.Conv2d(64, 64, (3, 3), (1, 1), (1, 1))
+        self.conv4 = nn.Conv2d(64, 32, (3, 3), (1, 1), (1, 1))
+        self.conv5 = nn.Conv2d(32, 3 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1))
+        self.prelu = nn.PReLU()
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
     def forward(self, x):
-        x = F.leaky_relu(self.conv1(x), inplace=True)
-        x = F.leaky_relu(self.conv2(x), inplace=True)
-        x = F.leaky_relu(self.conv3(x), inplace=True)
-        x = F.sigmoid(self.pixel_shuffle(self.conv4(x)))
+        x = self.prelu(self.conv1(x), inplace=True)
+        x = self.prelu(self.conv2(x), inplace=True)
+        x = self.prelu(self.conv3(x), inplace=True)
+        x = self.prelu(self.conv4(x), inplace=True)
+        x = F.sigmoid(self.pixel_shuffle(self.conv5(x)))
         return x
 
 
