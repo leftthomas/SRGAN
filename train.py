@@ -116,15 +116,16 @@ for epoch in range(1, NUM_EPOCHS + 1):
     valing_mse = 0
     valing_batch_sizes = 0
     for val_data, val_target in val_bar:
-        valing_batch_sizes += val_data.size(0)
+        batch_size = val_data.size(0)
+        valing_batch_sizes += batch_size
         utils.save_image(val_target, out_path + 'HR_epoch_%d_batch_%d.png' % (epoch, index))
         lr = Variable(val_data)
         if torch.cuda.is_available():
             lr = lr.cuda()
         sr = netG(lr).data.cpu()
         utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index))
-        batch_mse = ((sr - val_target) ** 2).sum()
-        valing_mse += batch_mse
+        batch_mse = ((sr - val_target) ** 2).mean()
+        valing_mse += batch_mse * batch_size
         valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
         val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f db' % valing_psnr)
         index += 1
