@@ -55,6 +55,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
     running_d_loss = 0
     running_g_loss = 0
     for data, target in train_bar:
+        g_update_first = True
         batch_size = data.size(0)
         running_batch_sizes += batch_size
         real_label = Variable(torch.ones(batch_size))
@@ -93,24 +94,20 @@ for epoch in range(1, NUM_EPOCHS + 1):
         ############################
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
-        # compute loss of fake_img
-        # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
-        g_loss = generator_criterion(fake_out, real_label)
-        # bp and optimize
-        optimizerG.zero_grad()
-        g_loss.backward()
-        optimizerG.step()
-
-        while fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD:
-            fake_img = netG(z)
-            fake_out = netD(fake_img)
-            fake_scores = fake_out.data.sum()
+        while (fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first:
+            # compute loss of fake_img
+            # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
             g_loss = generator_criterion(fake_out, real_label)
             # bp and optimize
             optimizerG.zero_grad()
             g_loss.backward()
             optimizerG.step()
+            fake_img = netG(z)
+            fake_out = netD(fake_img)
+            fake_scores = fake_out.data.sum()
+            g_update_first = False
 
+        g_loss = generator_criterion(fake_out, real_label)
         running_g_loss += g_loss.data[0] * batch_size
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
         d_loss = d_loss_real + d_loss_fake
