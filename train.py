@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data_utils import DatasetFromFolder
+from loss import GeneratorLoss, vgg16_relu2_2
 from model import Discriminator, Generator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
@@ -34,8 +35,7 @@ netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
-# generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
-generator_criterion = nn.BCELoss()
+generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
 discriminator_criterion = nn.BCELoss()
 if torch.cuda.is_available():
     netD.cuda()
@@ -86,8 +86,7 @@ for epoch in range(NUM_EPOCHS):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         # compute loss of fake_img
-        # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
-        g_loss = generator_criterion(fake_out, real_label)
+        g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
 
         # bp and optimize
         optimizerG.zero_grad()

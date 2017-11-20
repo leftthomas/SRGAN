@@ -32,11 +32,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(32 * 2),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(32 * 2, 32 * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(32 * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(32 * 4, 1, 2, 1, 0, bias=False),
+            nn.Conv2d(32 * 2, 1, 2, 1, 0, bias=False),
             nn.Sigmoid()
         )
 
