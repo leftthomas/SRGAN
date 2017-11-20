@@ -50,6 +50,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
     running_real_scores = 0
     running_fake_scores = 0
     running_batch_sizes = 0
+    running_d_loss = 0
+    running_g_loss = 0
     for data, target in train_bar:
         batch_size = data.size(0)
         running_batch_sizes += batch_size
@@ -83,6 +85,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
+        running_d_loss += d_loss.data[0] * batch_size
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
@@ -92,7 +95,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         ###########################
         # compute loss of fake_img
         g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
-
+        running_g_loss += g_loss.data[0] * batch_size
         # bp and optimize
         optimizerG.zero_grad()
         g_loss.backward()
@@ -100,7 +103,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f'
                                        % (
-                                           epoch, NUM_EPOCHS, d_loss.data[0], g_loss.data[0],
+                                           epoch, NUM_EPOCHS, running_d_loss / running_batch_sizes,
+                                           running_g_loss / running_batch_sizes,
                                            running_real_scores / running_batch_sizes,
                                            running_fake_scores / running_batch_sizes))
 
