@@ -12,18 +12,20 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data_utils import DatasetFromFolder
-from loss import GeneratorLoss, vgg16_relu2_2
+from loss import GeneratorLoss, vgg19_relu4_4
 from model import Discriminator, Generator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
+parser.add_argument('--g_stop_threshold', default=10, type=int, help='super resolution generator update stop threshold')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
+
 opt = parser.parse_args()
 
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
 G_THRESHOLD = 0.2
-G_STOP_THRESHOLD = 10
+G_STOP_THRESHOLD = opt.g_stop_threshold
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
@@ -36,8 +38,7 @@ netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
-# generator_criterion = GeneratorLoss(loss_network=vgg16_relu2_2())
-generator_criterion = GeneratorLoss()
+generator_criterion = GeneratorLoss(loss_network=vgg19_relu4_4())
 discriminator_criterion = nn.BCELoss()
 if torch.cuda.is_available():
     netD.cuda()
