@@ -1,5 +1,6 @@
 import argparse
 import os
+from math import log10
 from os import listdir
 
 import torch
@@ -20,8 +21,10 @@ if __name__ == "__main__":
     UPSCALE_FACTOR = opt.upscale_factor
     MODEL_NAME = opt.model_name
 
-    path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
-    images_name = [x for x in listdir(path) if is_image_file(x)]
+    data_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
+    target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
+    images_name = [x for x in listdir(data_path) if is_image_file(x)]
+
     model = Generator(upscale_factor=UPSCALE_FACTOR)
     if torch.cuda.is_available():
         model = model.cuda()
@@ -32,11 +35,15 @@ if __name__ == "__main__":
         os.makedirs(out_path)
     for image_name in tqdm(images_name, desc='convert LR images to SR images'):
 
-        image = Image.open(path + image_name)
+        image = Image.open(data_path + image_name)
         image = Variable(ToTensor()(image))
+        target = Image.open(target_path + image_name)
+        target = ToTensor()(target)
         if torch.cuda.is_available():
             image = image.cuda()
 
         out = model(image.unsqueeze(0)).cpu().data[0]
+        mse = ((target - out) ** 2).mean()
+        psnr = 10 * log10(1 / mse)
         out_img = ToPILImage()(out)
-        out_img.save(out_path + image_name)
+        out_img.save(out_path + 'psnr_%.4f_' % psnr + image_name)
