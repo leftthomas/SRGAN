@@ -22,6 +22,7 @@ opt = parser.parse_args()
 
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
+G_THRESHOLD = 0.1
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
@@ -82,11 +83,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_out = netD(fake_img)
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
         fake_scores = fake_out.data.sum()
-        running_fake_scores += fake_scores
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
-        running_d_loss += d_loss.data[0] * batch_size
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
@@ -97,11 +96,26 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # compute loss of fake_img
         # g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
         g_loss = generator_criterion(fake_out, real_label)
-        running_g_loss += g_loss.data[0] * batch_size
         # bp and optimize
         optimizerG.zero_grad()
         g_loss.backward()
         optimizerG.step()
+
+        while torch.abs((real_scores - fake_scores) / batch_size) > G_THRESHOLD:
+            fake_img = netG(z)
+            fake_out = netD(fake_img)
+            fake_scores = fake_out.data.sum()
+            g_loss = generator_criterion(fake_out, real_label)
+            # bp and optimize
+            optimizerG.zero_grad()
+            g_loss.backward()
+            optimizerG.step()
+
+        running_g_loss += g_loss.data[0] * batch_size
+        d_loss_fake = discriminator_criterion(fake_out, fake_label)
+        d_loss = d_loss_real + d_loss_fake
+        running_d_loss += d_loss.data[0] * batch_size
+        running_fake_scores += fake_scores
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f'
                                        % (
