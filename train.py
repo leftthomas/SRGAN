@@ -1,6 +1,6 @@
 import argparse
 import os
-from math import log10
+from math import log10, fabs
 
 import torch.nn as nn
 import torch.optim as optim
@@ -101,7 +101,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         g_loss.backward()
         optimizerG.step()
 
-        while torch.abs((real_scores - fake_scores) / batch_size) > G_THRESHOLD:
+        while fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD:
             fake_img = netG(z)
             fake_out = netD(fake_img)
             fake_scores = fake_out.data.sum()
