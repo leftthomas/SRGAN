@@ -15,10 +15,10 @@ class Generator(nn.Module):
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
     def forward(self, x):
-        x = self.prelu(self.conv1(x), inplace=True)
-        x = self.prelu(self.conv2(x), inplace=True)
-        x = self.prelu(self.conv3(x), inplace=True)
-        x = self.prelu(self.conv4(x), inplace=True)
+        x = self.prelu(self.conv1(x))
+        x = self.prelu(self.conv2(x))
+        x = self.prelu(self.conv3(x))
+        x = self.prelu(self.conv4(x))
         x = F.sigmoid(self.pixel_shuffle(self.conv5(x)))
         return x
 
