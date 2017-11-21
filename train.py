@@ -21,7 +21,7 @@ parser.add_argument('--upscale_factor', default=3, type=int, choices=[2, 3, 4, 8
                     help='super resolution upscale factor')
 parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                     help='super resolution generator update threshold')
-parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[10, 20, 30],
+parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[1, 10, 20, 30],
                     help='super resolution generator update stop threshold')
 parser.add_argument('--g_loss_type', default='GACL', type=str,
                     choices=['GAL', 'GAML', 'GACL', 'GACLL', 'GACLV', 'GACLLV'],
