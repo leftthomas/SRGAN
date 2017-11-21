@@ -136,7 +136,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         batch_size = val_data.size(0)
         valing_batch_sizes += batch_size
         if epoch == 1:
-            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index)
+            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=4)
         lr = Variable(val_data)
         if torch.cuda.is_available():
             lr = lr.cuda()
