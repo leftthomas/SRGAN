@@ -25,7 +25,7 @@ parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[10, 20,
                     help='super resolution generator update stop threshold')
 parser.add_argument('--g_loss_type', default='GACL', type=str,
                     choices=['GAL', 'GAML', 'GACL', 'GACLL', 'GACLV', 'GACLLV'],
-                    help='super resolution generator loss function type(GAL\GAML\GACL\GACLL\GACLV\GACLLV)')
+                    help='super resolution generator loss function type')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
 
 opt = parser.parse_args()

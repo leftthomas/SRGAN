@@ -44,7 +44,10 @@ Download the dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then ext
 python train.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 3]
+--upscale_factor      super resolution upscale factor [default value is 3](choices:[2, 3, 4, 8])
+--g_threshold         super resolution generator update threshold [default value is 0.2](choices:[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+--g_stop_threshold    super resolution generator update stop threshold [default value is 10](choices:[10, 20, 30])
+--g_loss_type         super resolution generator loss function type [default value is GACL](choices:['GAL', 'GAML', 'GACL', 'GACLL', 'GACLV', 'GACLLV'])
 --num_epochs          super resolution epochs number [default value is 100]
 ```
 The output val super resolution images are on `images` directory.
