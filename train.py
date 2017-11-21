@@ -61,12 +61,10 @@ elif G_LOSS_TYPE == 'GACLL':
 elif G_LOSS_TYPE == 'GACLV':
     generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
                                                               using_l1=False)
-elif G_LOSS_TYPE == 'GACLLV':
+else:
+    # G_LOSS_TYPE == 'GACLLV'
     generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
                                                               using_l1=True)
-else:
-    generator_criterion = None
-    print('wrong G Loss Type!')
 
 discriminator_criterion = nn.BCELoss()
 
