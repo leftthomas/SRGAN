@@ -1,54 +1,74 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 from torchvision.models.vgg import vgg19
 
 
-class CapsuleLoss(nn.Module):
-    def __init__(self):
-        super(CapsuleLoss, self).__init__()
-        self.reconstruction_loss = nn.MSELoss(size_average=False)
-
-    def forward(self, images, labels, classes, reconstructions):
-        left = F.relu(0.9 - classes, inplace=True) ** 2
-        right = F.relu(classes - 0.1, inplace=True) ** 2
-
-        margin_loss = labels * left + 0.5 * (1. - labels) * right
-        margin_loss = margin_loss.sum()
-
-        reconstruction_loss = self.reconstruction_loss(reconstructions, images)
-
-        return (margin_loss + 0.0005 * reconstruction_loss) / images.size(0)
-
-
-def vgg19_relu4_4():
+# vgg19 loss network (default out with last relu feature map)
+def vgg19_loss_network(is_last=True):
     vgg = vgg19(pretrained=True)
-    relu4_4 = nn.Sequential(*list(vgg.features)[:27])
-    for param in relu4_4.parameters():
+    if is_last:
+        relu = nn.Sequential(*list(vgg.features)[:36])
+    else:
+        # second last
+        relu = nn.Sequential(*list(vgg.features)[:27])
+    for param in relu.parameters():
         param.requires_grad = False
-    relu4_4.eval()
-    return relu4_4
+    relu.eval()
+    return relu
 
 
-class GeneratorLoss(nn.Module):
-    def __init__(self, loss_network):
-        super(GeneratorLoss, self).__init__()
+# only Adversarial Loss
+class GeneratorAdversarialLoss(nn.Module):
+    def __init__(self):
+        super(GeneratorAdversarialLoss, self).__init__()
+        self.adversarial_loss = nn.BCELoss()
+
+    def forward(self, out_labels, target_labels, out_images=None, target_images=None):
+        # Adversarial Loss
+        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        return adversarial_loss
+
+
+# Adversarial Loss with Pixel MSE Loss
+class GeneratorAdversarialWithPixelMSELoss(nn.Module):
+    def __init__(self):
+        super(GeneratorAdversarialWithPixelMSELoss, self).__init__()
+        self.adversarial_loss = nn.BCELoss()
+        self.mse_loss = nn.MSELoss()
+
+    def forward(self, out_labels, target_labels, out_images, target_images):
+        # Adversarial Loss
+        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        # Pixel MSE Loss
+        mse_loss = self.mse_loss(out_images, target_images)
+        return 1e-3 * adversarial_loss + mse_loss
+
+
+# Adversarial Loss with Content Loss(default not with l1 loss)
+class GeneratorAdversarialWithContentLoss(nn.Module):
+    def __init__(self, loss_network, using_l1=False):
+        super(GeneratorAdversarialWithContentLoss, self).__init__()
         self.loss_network = loss_network
         self.adversarial_loss = nn.BCELoss()
-        self.l1_loss = nn.L1Loss()
+        self.using_l1 = using_l1
+        if self.using_l1:
+            self.l1_loss = nn.L1Loss()
 
-    def forward(self, out_images, target_images, out_labels, target_labels):
+    def forward(self, out_labels, target_labels, out_images, target_images):
+        # Adversarial Loss
+        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
         # Content Loss
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
         content_loss = torch.mean((features_input - features_target) ** 2)
-        # Adversarial Loss
-        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
-        # L1 Loss
-        l1_loss = self.l1_loss(out_images, target_images)
-        return 100 * content_loss + 20 * l1_loss + 4 * adversarial_loss
+        if self.using_l1:
+            # L1 Loss
+            l1_loss = self.l1_loss(out_images, target_images)
+            return 1e-3 * adversarial_loss + content_loss + 1e-1 * l1_loss
+        else:
+            return 1e-3 * adversarial_loss + content_loss
 
 
 if __name__ == "__main__":
-    digit_loss = CapsuleLoss()
-    print(digit_loss)
+    g_loss = GeneratorAdversarialLoss()
+    print(g_loss)

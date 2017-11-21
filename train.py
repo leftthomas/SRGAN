@@ -12,20 +12,29 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data_utils import DatasetFromFolder
-from loss import GeneratorLoss, vgg19_relu4_4
+from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
+    GeneratorAdversarialWithPixelMSELoss
 from model import Discriminator, Generator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
-parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
-parser.add_argument('--g_stop_threshold', default=10, type=int, help='super resolution generator update stop threshold')
+parser.add_argument('--upscale_factor', default=3, type=int, choices=[2, 3, 4, 8],
+                    help='super resolution upscale factor')
+parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+                    help='super resolution generator update threshold')
+parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[10, 20, 30],
+                    help='super resolution generator update stop threshold')
+parser.add_argument('--g_loss_type', default='GACL', type=str,
+                    choices=['GAL', 'GAML', 'GACL', 'GACLL', 'GACLV', 'GACLLV'],
+                    help='super resolution generator loss function type(GAL\GAML\GACL\GACLL\GACLV\GACLLV)')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
 
 opt = parser.parse_args()
 
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
-G_THRESHOLD = 0.2
+G_THRESHOLD = opt.g_threshold
 G_STOP_THRESHOLD = opt.g_stop_threshold
+G_LOSS_TYPE = opt.g_loss_type
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
@@ -38,8 +47,29 @@ netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
-generator_criterion = GeneratorLoss(loss_network=vgg19_relu4_4())
+
+if G_LOSS_TYPE == 'GAL':
+    generator_criterion = GeneratorAdversarialLoss()
+elif G_LOSS_TYPE == 'GAML':
+    generator_criterion = GeneratorAdversarialWithPixelMSELoss()
+elif G_LOSS_TYPE == 'GACL':
+    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=True),
+                                                              using_l1=False)
+elif G_LOSS_TYPE == 'GACLL':
+    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=True),
+                                                              using_l1=True)
+elif G_LOSS_TYPE == 'GACLV':
+    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
+                                                              using_l1=False)
+elif G_LOSS_TYPE == 'GACLLV':
+    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
+                                                              using_l1=True)
+else:
+    generator_criterion = None
+    print('wrong G Loss Type!')
+
 discriminator_criterion = nn.BCELoss()
+
 if torch.cuda.is_available():
     netD.cuda()
     netG.cuda()
@@ -100,7 +130,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
             # compute loss of fake_img
-            g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
+            g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
             # bp and optimize
             optimizerG.zero_grad()
             g_loss.backward()
@@ -111,7 +141,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             g_update_first = False
             index += 1
 
-        g_loss = generator_criterion(fake_img, real_img, fake_out, real_label)
+        g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
         running_g_loss += g_loss.data[0] * batch_size
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
         d_loss = d_loss_real + d_loss_fake
