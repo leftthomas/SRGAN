@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     model = Generator(upscale_factor=UPSCALE_FACTOR)
     if torch.cuda.is_available():
-        model = model.cuda()
+        model.cuda()
     model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
     out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
@@ -37,12 +37,12 @@ if __name__ == "__main__":
     for image_name in tqdm(images_name, desc='convert LR images to SR images'):
 
         image = Image.open(data_path + image_name)
-        image = Variable(ToTensor()(image))
+        image = Variable(ToTensor()(image)).unsqueeze(0)
         target = Image.open(target_path + image_name)
-        target = Variable(ToTensor()(target))
+        target = Variable(ToTensor()(target)).unsqueeze(0)
         if torch.cuda.is_available():
-            image = image.unsqueeze(0).cuda()
-            target = target.unsqueeze(0).cuda()
+            image.cuda()
+            target.cuda()
 
         out = model(image)
         mse = ((target - out) ** 2).mean()

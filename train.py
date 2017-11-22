@@ -97,8 +97,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         ###########################
         real_img = Variable(target)
         if torch.cuda.is_available():
-            real_img = real_img.cuda()
-            real_label = real_label.cuda()
+            real_img.cuda()
+            real_label.cuda()
 
         # compute loss of real_img
         real_out = netD(real_img)
@@ -109,8 +109,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # compute loss of fake_img
         z = Variable(data)
         if torch.cuda.is_available():
-            z = z.cuda()
-            fake_label = fake_label.cuda()
+            z.cuda()
+            fake_label.cuda()
         fake_img = netG(z)
         fake_out = netD(fake_img)
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
@@ -170,8 +170,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         lr = Variable(val_data)
         hr = Variable(val_target)
         if torch.cuda.is_available():
-            lr = lr.cuda()
-            hr = hr.cuda()
+            lr.cuda()
+            hr.cuda()
         sr = netG(lr)
         utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
 
