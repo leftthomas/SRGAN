@@ -37,9 +37,9 @@ if __name__ == "__main__":
     for image_name in tqdm(images_name, desc='convert LR images to SR images'):
 
         image = Image.open(data_path + image_name)
-        image = Variable(ToTensor()(image)).unsqueeze(0)
+        image = Variable(ToTensor()(image), volatile=True).unsqueeze(0)
         target = Image.open(target_path + image_name)
-        target = Variable(ToTensor()(target)).unsqueeze(0)
+        target = Variable(ToTensor()(target), volatile=True).unsqueeze(0)
         if torch.cuda.is_available():
             image = image.cuda()
             target = target.cuda()
