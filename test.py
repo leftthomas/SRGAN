@@ -3,9 +3,9 @@ import os
 from math import log10
 from os import listdir
 
-import pytorch_ssim
 import torch
 from PIL import Image
+from skimage.measure import structural_similarity
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
@@ -41,12 +41,12 @@ if __name__ == "__main__":
         target = Image.open(target_path + image_name)
         target = Variable(ToTensor()(target))
         if torch.cuda.is_available():
-            image = image.unsqueeze(0).cuda()
-            target = target.unsqueeze(0).cuda()
+            image = image.cuda()
+            target = target.cuda()
 
-        out = model(image)
+        out = model(image.unsqueeze(0))[0]
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse.data.cpu().numpy())
-        ssim = pytorch_ssim.ssim(out, target)
-        out_img = ToPILImage()(out[0].data)
+        ssim = structural_similarity(out.data.cpu().numpy(), target.data.cpu().numpy())
+        out_img = ToPILImage()(out.data)
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
