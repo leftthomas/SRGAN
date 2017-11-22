@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     model = Generator(upscale_factor=UPSCALE_FACTOR)
     if torch.cuda.is_available():
-        model.cuda()
+        model = model.cuda()
     model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
     out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
@@ -41,8 +41,8 @@ if __name__ == "__main__":
         target = Image.open(target_path + image_name)
         target = Variable(ToTensor()(target)).unsqueeze(0)
         if torch.cuda.is_available():
-            image.cuda()
-            target.cuda()
+            image = image.cuda()
+            target = target.cuda()
 
         out = model(image)
         mse = ((target - out) ** 2).mean()
