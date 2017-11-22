@@ -5,7 +5,7 @@ from os import listdir
 
 import torch
 from PIL import Image
-from skimage.measure import structural_similarity
+from skimage.measure._structural_similarity import compare_ssim
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
@@ -47,6 +47,6 @@ if __name__ == "__main__":
         out = model(image.unsqueeze(0))[0]
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse.data.cpu().numpy())
-        ssim = structural_similarity(out.data.cpu().numpy(), target.data.cpu().numpy())
+        ssim = compare_ssim(out.data.cpu().numpy(), target.data.cpu().numpy(), multichannel=True)
         out_img = ToPILImage()(out.data)
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
