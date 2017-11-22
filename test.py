@@ -48,5 +48,5 @@ if __name__ == "__main__":
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse.data.cpu().numpy())
         ssim = pytorch_ssim.ssim(out, target)
-        out_img = ToPILImage()(out[0].data)
+        out_img = ToPILImage()(out[0].data.cpu())
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
