@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
         out = model(image.unsqueeze(0))[0]
         mse = ((target - out) ** 2).mean()
-        psnr = 10 * log10(1 / mse)
+        psnr = 10 * log10(1 / mse.data)
         ssim = pytorch_ssim.ssim(out, target)
         out_img = ToPILImage()(out.data)
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
