@@ -5,11 +5,11 @@ from os import listdir
 
 import torch
 from PIL import Image
-from skimage.measure import compare_ssim
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
 
+import pytorch_ssim
 from data_utils import is_image_file
 from model import Generator
 
@@ -41,12 +41,12 @@ if __name__ == "__main__":
         target = Image.open(target_path + image_name)
         target = Variable(ToTensor()(target))
         if torch.cuda.is_available():
-            image = image.cuda()
-            target = target.cuda()
+            image = image.unsqueeze(0).cuda()
+            target = target.unsqueeze(0).cuda()
 
-        out = model(image.unsqueeze(0))[0]
+        out = model(image)
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse.data.cpu().numpy())
-        ssim = compare_ssim(out.data.cpu().numpy(), target.data.cpu().numpy(), multichannel=True)
-        out_img = ToPILImage()(out.data)
+        ssim = pytorch_ssim.ssim(out, target)
+        out_img = ToPILImage()(out[0].data)
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
