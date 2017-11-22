@@ -5,7 +5,7 @@ from os import listdir
 
 import torch
 from PIL import Image
-from skimage.measure._structural_similarity import compare_ssim
+from skimage.measure import compare_ssim
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
