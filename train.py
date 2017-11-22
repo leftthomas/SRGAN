@@ -175,12 +175,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
         sr = netG(lr)
         utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
 
-        batch_mse = ((sr - hr) ** 2).mean()
+        batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
         valing_mse += batch_mse * batch_size
-        batch_ssim = pytorch_ssim.ssim(sr, hr)
+        batch_ssim = pytorch_ssim.ssim(sr, hr).data.cpu().numpy()
         valing_ssims += batch_ssim * batch_size
-        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes).data.cpu().numpy())
-        valing_ssim = (valing_ssims / valing_batch_sizes).data.cpu().numpy()
+        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
+        valing_ssim = valing_ssims / valing_batch_sizes
         val_bar.set_description(
             desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (valing_psnr, valing_ssim))
         index += 1
