@@ -3,6 +3,7 @@ import os
 from math import log10
 from os import listdir
 
+import pytorch_ssim
 import torch
 from PIL import Image
 from torch.autograd import Variable
@@ -38,12 +39,14 @@ if __name__ == "__main__":
         image = Image.open(data_path + image_name)
         image = Variable(ToTensor()(image))
         target = Image.open(target_path + image_name)
-        target = ToTensor()(target)
+        target = Variable(ToTensor()(target))
         if torch.cuda.is_available():
             image = image.cuda()
+            target = target.cuda()
 
-        out = model(image.unsqueeze(0)).cpu().data[0]
+        out = model(image.unsqueeze(0))[0]
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse)
-        out_img = ToPILImage()(out)
-        out_img.save(out_path + 'psnr_%.4f_' % psnr + image_name)
+        ssim = pytorch_ssim.ssim(out, target)
+        out_img = ToPILImage()(out.data)
+        out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)

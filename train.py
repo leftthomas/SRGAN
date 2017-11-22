@@ -2,6 +2,7 @@ import argparse
 import os
 from math import log10, fabs
 
+import pytorch_ssim
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
@@ -159,6 +160,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
     val_bar = tqdm(val_loader)
     index = 1
     valing_mse = 0
+    valing_ssims = 0
     valing_batch_sizes = 0
     for val_data, val_target in val_bar:
         batch_size = val_data.size(0)
@@ -166,14 +168,21 @@ for epoch in range(1, NUM_EPOCHS + 1):
         if epoch == 1:
             utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=4)
         lr = Variable(val_data)
+        hr = Variable(val_target)
         if torch.cuda.is_available():
             lr = lr.cuda()
-        sr = netG(lr).data.cpu()
-        utils.save_image(sr, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
-        batch_mse = ((sr - val_target) ** 2).mean()
+            hr = hr.cuda()
+        sr = netG(lr)
+        utils.save_image(sr.data, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
+
+        batch_mse = ((sr - hr) ** 2).mean()
         valing_mse += batch_mse * batch_size
+        batch_ssim = pytorch_ssim.ssim(sr, hr)
+        valing_ssims += batch_ssim * batch_size
         valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
-        val_bar.set_description(desc='[convert LR images to SR images] PSNR: %.4f dB' % valing_psnr)
+        valing_ssim = valing_ssims / valing_batch_sizes
+        val_bar.set_description(
+            desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (valing_psnr, valing_ssim))
         index += 1
 
     # save model parameters
