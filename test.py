@@ -41,12 +41,12 @@ if __name__ == "__main__":
         target = Image.open(target_path + image_name)
         target = Variable(ToTensor()(target))
         if torch.cuda.is_available():
-            image = image.cuda()
-            target = target.cuda()
+            image = image.unsqueeze(0).cuda()
+            target = target.unsqueeze(0).cuda()
 
-        out = model(image.unsqueeze(0))[0]
+        out = model(image)
         mse = ((target - out) ** 2).mean()
         psnr = 10 * log10(1 / mse.data.cpu().numpy())
         ssim = pytorch_ssim.ssim(out, target)
-        out_img = ToPILImage()(out.data)
+        out_img = ToPILImage()(out[0].data)
         out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
