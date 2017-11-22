@@ -2,7 +2,6 @@ import argparse
 import os
 from math import log10, fabs
 
-import pytorch_ssim
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
@@ -12,6 +11,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+import pytorch_ssim
 from data_utils import DatasetFromFolder
 from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
     GeneratorAdversarialWithPixelMSELoss
@@ -173,14 +173,14 @@ for epoch in range(1, NUM_EPOCHS + 1):
             lr = lr.cuda()
             hr = hr.cuda()
         sr = netG(lr)
-        utils.save_image(sr.data, out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
+        utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4)
 
         batch_mse = ((sr - hr) ** 2).mean()
         valing_mse += batch_mse * batch_size
         batch_ssim = pytorch_ssim.ssim(sr, hr)
         valing_ssims += batch_ssim * batch_size
-        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
-        valing_ssim = valing_ssims / valing_batch_sizes
+        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes).data.cpu().numpy())
+        valing_ssim = (valing_ssims / valing_batch_sizes).data.cpu().numpy()
         val_bar.set_description(
             desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (valing_psnr, valing_ssim))
         index += 1
