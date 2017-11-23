@@ -1,51 +1,87 @@
-import torch.nn as nn
+import torch
 import torch.nn.functional as F
+from torch import nn
+from torch.autograd import Variable
 
 
-class Generator(nn.Module):
+def squash(tensor, dim=1):
+    squared_norm = (tensor ** 2).sum(dim=dim, keepdim=True)
+    scale = squared_norm / (1 + squared_norm)
+    return scale * tensor / torch.sqrt(squared_norm)
+
+
+class CapsuleGenerator(nn.Module):
     def __init__(self, upscale_factor):
-        super(Generator, self).__init__()
-
-        self.conv1 = nn.Conv2d(3, 32, (5, 5), (1, 1), (2, 2))
-        self.conv2 = nn.Conv2d(32, 64, (3, 3), (1, 1), (1, 1))
-        self.conv3 = nn.Conv2d(64, 64, (3, 3), (1, 1), (1, 1))
-        self.conv4 = nn.Conv2d(64, 32, (3, 3), (1, 1), (1, 1))
-        self.conv5 = nn.Conv2d(32, 3 * (upscale_factor ** 2), (3, 3), (1, 1), (1, 1))
-        self.prelu = nn.PReLU()
+        super(CapsuleGenerator, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=5, stride=1, padding=2)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1, groups=4)
+        self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1, groups=8)
+        self.conv5 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, stride=1, padding=1, groups=16)
+        self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=3, stride=1, padding=1, groups=32)
+        self.conv7 = nn.Conv2d(in_channels=128, out_channels=3 * (upscale_factor ** 2), kernel_size=5, stride=1,
+                               padding=2)
+        self.lrelu = nn.LeakyReLU(0.2, inplace=True)
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
     def forward(self, x):
-        x = self.prelu(self.conv1(x))
-        x = self.prelu(self.conv2(x))
-        x = self.prelu(self.conv3(x))
-        x = self.prelu(self.conv4(x))
-        x = F.sigmoid(self.pixel_shuffle(self.conv5(x)))
+        x = self.lrelu(self.conv1(x))
+        x = self.lrelu(self.conv2(x))
+
+        x = self.conv3(x)
+        # capsules squash
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+        x = self.conv4(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
+        x = self.conv5(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.conv6(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=32, dim=1)], dim=1)
+
+        x = F.sigmoid(self.pixel_shuffle(self.conv7(x)))
         return x
 
 
-class Discriminator(nn.Module):
+class CapsuleDiscriminator(nn.Module):
     def __init__(self):
-        super(Discriminator, self).__init__()
-        self.main = nn.Sequential(
-            nn.Conv2d(3, 32, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(32),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(32, 32 * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(32 * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(32 * 2, 1, 2, 1, 0, bias=False),
-            nn.Sigmoid()
-        )
+        super(CapsuleDiscriminator, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=5, stride=1, padding=2)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=1, groups=32)
+        self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1, groups=16)
+        self.conv5 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, stride=1, padding=1, groups=8)
+        self.conv6 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=3, stride=1, padding=1, groups=4)
+        self.conv7 = nn.Conv2d(in_channels=128, out_channels=3, kernel_size=5, stride=1, padding=2)
+        self.lrelu = nn.LeakyReLU(0.2, inplace=True)
 
     def forward(self, x):
-        output = self.main(x)
-        return output.view(output.size(0), -1).mean(dim=-1)
+        x = self.lrelu(self.conv1(x))
+        x = self.lrelu(self.conv2(x))
+
+        x = self.conv3(x)
+        # capsules squash
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=32, dim=1)], dim=1)
+        x = self.conv4(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=16, dim=1)], dim=1)
+        x = self.conv5(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=8, dim=1)], dim=1)
+        x = self.conv6(x)
+        x = torch.cat([squash(capsule) for capsule in torch.chunk(x, chunks=4, dim=1)], dim=1)
+
+        x = self.conv7(x)
+        x = x.view(x.size(0), -1).norm(dim=-1)
+        return F.sigmoid(x)
 
 
 if __name__ == "__main__":
-    netG = Generator(upscale_factor=3)
-    print(netG)
-    netD = Discriminator()
-    print(netD)
+    a = torch.FloatTensor([[0, 1, 2], [3, 4, 5]])
+    b = squash(a)
+    print(b)
+    images = Variable(torch.randn(10, 3, 75, 75))
+    g = CapsuleGenerator(upscale_factor=3)
+    print(g)
+    output = g(images)
+    d = CapsuleDiscriminator()
+    print(d)
+    prob = d(output)
+    print(prob)

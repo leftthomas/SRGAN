@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import is_image_file
-from model import Generator
+from model import CapsuleGenerator
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
     images_name = [x for x in listdir(data_path) if is_image_file(x)]
 
-    model = Generator(upscale_factor=UPSCALE_FACTOR)
+    model = CapsuleGenerator(upscale_factor=UPSCALE_FACTOR)
     if torch.cuda.is_available():
         model = model.cuda()
     model.load_state_dict(torch.load('epochs/' + MODEL_NAME))

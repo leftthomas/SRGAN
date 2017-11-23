@@ -1,5 +1,5 @@
 # FCCapsNet
-A PyTorch implementation of FCCapsNet based on IJCAI2018 paper [xxxxx](xxxxx)
+A PyTorch implementation of xxxxxx based on xxxxx paper [xxxxx](xxxxx)
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)

@@ -2,6 +2,7 @@ import argparse
 import os
 from math import log10, fabs
 
+import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
@@ -15,7 +16,7 @@ import pytorch_ssim
 from data_utils import DatasetFromFolder
 from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
     GeneratorAdversarialWithPixelMSELoss
-from model import Discriminator, Generator
+from model import CapsuleDiscriminator, CapsuleGenerator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--upscale_factor', default=3, type=int, choices=[2, 3, 4, 8],
@@ -44,9 +45,9 @@ val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_tra
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=16, shuffle=True)
 val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=16, shuffle=False)
 
-netG = Generator(UPSCALE_FACTOR)
+netG = CapsuleGenerator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
-netD = Discriminator()
+netD = CapsuleDiscriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
 if G_LOSS_TYPE == 'GAL':
@@ -78,6 +79,12 @@ if torch.cuda.is_available():
 optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
+results_real_scores = []
+results_fake_scores = []
+results_d_loss = []
+results_g_loss = []
+results_psnr = []
+results_ssim = []
 for epoch in range(1, NUM_EPOCHS + 1):
     train_bar = tqdm(train_loader)
     running_real_scores = 0
@@ -161,6 +168,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
     index = 1
     valing_mse = 0
     valing_ssims = 0
+    valing_psnr = 0
+    valing_ssim = 0
     valing_batch_sizes = 0
     for val_data, val_target in val_bar:
         batch_size = val_data.size(0)
@@ -188,3 +197,20 @@ for epoch in range(1, NUM_EPOCHS + 1):
     # save model parameters
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     torch.save(netD.state_dict(), 'epochs/netD_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
+    # save loss\scores\psnr\ssim
+    results_real_scores.append(running_real_scores / running_batch_sizes)
+    results_fake_scores.append(running_fake_scores / running_batch_sizes)
+    results_g_loss.append(running_g_loss / running_batch_sizes)
+    results_d_loss.append(running_d_loss / running_batch_sizes)
+    results_psnr.append(valing_psnr)
+    results_ssim.append(valing_ssim)
+
+out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
+if not os.path.exists(out_path):
+    os.makedirs(out_path)
+data_frame = pd.DataFrame(data=
+                          {'Loss_D': results_d_loss, 'Loss_G': results_g_loss,
+                           'D(x)': results_real_scores,
+                           'D(G(z))': results_fake_scores, 'PSNR': results_psnr, 'SSIM': results_ssim},
+                          index=range(1, NUM_EPOCHS + 1))
+data_frame.to_csv(out_path + 'results.csv', index_label='Epoch')
