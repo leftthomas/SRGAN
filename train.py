@@ -213,4 +213,4 @@ data_frame = pd.DataFrame(data=
                            'D(x)': results_real_scores,
                            'D(G(z))': results_fake_scores, 'PSNR': results_psnr, 'SSIM': results_ssim},
                           index=range(1, NUM_EPOCHS + 1))
-data_frame.to_csv(out_path + 'results.csv', index_label='Epoch')
+data_frame.to_csv(out_path + 'train_results.csv', index_label='Epoch')
