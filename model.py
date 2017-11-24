@@ -13,16 +13,16 @@ def squash(tensor, dim=1):
 class CapsuleGenerator(nn.Module):
     def __init__(self, upscale_factor):
         super(CapsuleGenerator, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=7, stride=1, padding=3)
-        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=4, dilation=2)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=5, stride=1, padding=2)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=2, dilation=2)
         self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=128)
         self.conv4 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=64)
-        self.conv5 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
+        self.conv5 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=3, stride=1, padding=2, dilation=2,
                                groups=32)
-        self.conv6 = nn.Conv2d(in_channels=128, out_channels=3 * (upscale_factor ** 2), kernel_size=7, stride=1,
-                               padding=3)
+        self.conv6 = nn.Conv2d(in_channels=128, out_channels=3 * (upscale_factor ** 2), kernel_size=5, stride=1,
+                               padding=2)
         self.lrelu = nn.LeakyReLU(0.2, inplace=True)
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
@@ -46,16 +46,16 @@ class CapsuleGenerator(nn.Module):
 class CapsuleDiscriminator(nn.Module):
     def __init__(self):
         super(CapsuleDiscriminator, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=7, stride=1, padding=3)
-        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=5, stride=1, padding=4, dilation=2)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=128, kernel_size=5, stride=1, padding=2)
+        self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=2, dilation=2)
         self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=128)
         self.conv4 = nn.Conv2d(in_channels=512, out_channels=256, kernel_size=3, stride=1, padding=3, dilation=3,
                                groups=64)
-        self.conv5 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=5, stride=1, padding=4, dilation=2,
+        self.conv5 = nn.Conv2d(in_channels=256, out_channels=128, kernel_size=3, stride=1, padding=2, dilation=2,
                                groups=32)
-        self.conv6 = nn.Conv2d(in_channels=128, out_channels=3, kernel_size=7, stride=1,
-                               padding=3)
+        self.conv6 = nn.Conv2d(in_channels=128, out_channels=3, kernel_size=5, stride=1,
+                               padding=2)
         self.lrelu = nn.LeakyReLU(0.2, inplace=True)
 
     def forward(self, x):
