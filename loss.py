@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 from torchvision.models.vgg import vgg19
 
@@ -34,7 +33,7 @@ class GeneratorAdversarialWithPixelMSELoss(nn.Module):
     def __init__(self):
         super(GeneratorAdversarialWithPixelMSELoss, self).__init__()
         self.adversarial_loss = nn.BCELoss()
-        self.mse_loss = nn.MSELoss()
+        self.mse_loss = nn.MSELoss(size_average=False)
 
     def forward(self, out_labels, target_labels, out_images, target_images):
         # Adversarial Loss
@@ -52,7 +51,7 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         self.adversarial_loss = nn.BCELoss()
         self.using_l1 = using_l1
         if self.using_l1:
-            self.l1_loss = nn.L1Loss()
+            self.l1_loss = nn.L1Loss(size_average=False)
 
     def forward(self, out_labels, target_labels, out_images, target_images):
         # Adversarial Loss
@@ -60,7 +59,7 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         # Content Loss
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
-        content_loss = torch.mean((features_input - features_target) ** 2)
+        content_loss = (features_input - features_target) ** 2
         if self.using_l1:
             # L1 Loss
             l1_loss = self.l1_loss(out_images, target_images)
