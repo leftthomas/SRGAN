@@ -49,6 +49,7 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
         self.loss_network = loss_network
         self.adversarial_loss = nn.BCELoss()
+        self.mse_loss = nn.MSELoss(size_average=False)
         self.using_l1 = using_l1
         if self.using_l1:
             self.l1_loss = nn.L1Loss(size_average=False)
@@ -59,7 +60,7 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         # Content Loss
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
-        content_loss = (features_input - features_target) ** 2
+        content_loss = self.mse_loss(features_input, features_target)
         if self.using_l1:
             # L1 Loss
             l1_loss = self.l1_loss(out_images, target_images)
