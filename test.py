@@ -16,8 +16,8 @@ from data_utils import is_image_file
 from model import CapsuleGenerator
 
 parser = argparse.ArgumentParser(description='Test Super Resolution')
-parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
-parser.add_argument('--model_name', default='netG_epoch_3_100.pth', type=str, help='super resolution model name')
+parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
+parser.add_argument('--model_name', default='netG_epoch_4_100.pth', type=str, help='super resolution model name')
 opt = parser.parse_args()
 
 UPSCALE_FACTOR = opt.upscale_factor

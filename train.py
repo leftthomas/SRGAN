@@ -16,10 +16,10 @@ import pytorch_ssim
 from data_utils import DatasetFromFolder
 from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
     GeneratorAdversarialWithPixelMSELoss
-from model import CapsuleDiscriminator, CapsuleGenerator
+from srgan import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
-parser.add_argument('--upscale_factor', default=3, type=int, choices=[2, 3, 4, 8],
+parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 3, 4, 8],
                     help='super resolution upscale factor')
 parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                     help='super resolution generator update threshold')
@@ -45,9 +45,9 @@ val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_tra
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=4, shuffle=True)
 val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=4, shuffle=False)
 
-netG = CapsuleGenerator(UPSCALE_FACTOR)
+netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
-netD = CapsuleDiscriminator()
+netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
 if G_LOSS_TYPE == 'GAL':
