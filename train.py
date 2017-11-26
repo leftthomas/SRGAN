@@ -205,12 +205,13 @@ for epoch in range(1, NUM_EPOCHS + 1):
     results_psnr.append(valing_psnr)
     results_ssim.append(valing_ssim)
 
-out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
-if not os.path.exists(out_path):
-    os.makedirs(out_path)
-data_frame = pd.DataFrame(data=
-                          {'Loss_D': results_d_loss, 'Loss_G': results_g_loss,
-                           'D(x)': results_real_scores,
-                           'D(G(z))': results_fake_scores, 'PSNR': results_psnr, 'SSIM': results_ssim},
-                          index=range(1, NUM_EPOCHS + 1))
-data_frame.to_csv(out_path + 'train_results.csv', index_label='Epoch')
+    if epoch % 10 == 0 and epoch != 0:
+        out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
+        if not os.path.exists(out_path):
+            os.makedirs(out_path)
+        data_frame = pd.DataFrame(data=
+                                  {'Loss_D': results_d_loss, 'Loss_G': results_g_loss,
+                                   'D(x)': results_real_scores,
+                                   'D(G(z))': results_fake_scores, 'PSNR': results_psnr, 'SSIM': results_ssim},
+                                  index=range(1, epoch + 1))
+        data_frame.to_csv(out_path + 'train_results.csv', index_label='Epoch')
