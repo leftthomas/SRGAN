@@ -62,6 +62,17 @@ optional arguments:
 ```
 The output super resolution images are on `results` directory.
 
+### Test Single Image
+```
+python test_single.py
+
+optional arguments:
+--upscale_factor      super resolution upscale factor [default value is 4]
+--image_name          low resolution image name
+--model_name          super resolution model name [default value is netG_epoch_4_100.pth]
+```
+The output super resolution images are on the same directory.
+
 ## Benchmarks
 The reconstructions of the digit numbers are showed at right and the ground truth at left.
 <table>
