@@ -6,7 +6,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from data_utils import DatasetFromFolder
-from loss import PerceptualLoss, TotalVariationLoss
+from loss import PerceptualLoss, TotalVariationLoss, vgg16_loss_network
 from model import Generator, Discriminator
 
 train_args = {
@@ -28,7 +28,7 @@ def train():
     g_optimizer = optim.RMSprop(g.parameters(), lr=1e-4)
     d_optimizer = optim.RMSprop(d.parameters(), lr=1e-4)
 
-    perceptual_criterion, tv_criterion = PerceptualLoss().cuda(), TotalVariationLoss().cuda()
+    perceptual_criterion, tv_criterion = PerceptualLoss(vgg16_loss_network).cuda(), TotalVariationLoss().cuda()
 
     for epoch in range(1, 101):
         train_bar = tqdm(train_loader)

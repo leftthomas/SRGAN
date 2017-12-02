@@ -16,6 +16,15 @@ def vgg19_loss_network(is_last=True):
     return relu
 
 
+# vgg16 loss network
+def vgg16_loss_network():
+    vgg = vgg16(pretrained=True)
+    relu = nn.Sequential(*(list(vgg.features.children())[:36])).eval()
+    for param in relu.parameters():
+        param.requires_grad = False
+    return relu
+
+
 # only Adversarial Loss
 class GeneratorAdversarialLoss(nn.Module):
     def __init__(self):
@@ -33,7 +42,7 @@ class GeneratorAdversarialWithPixelMSELoss(nn.Module):
     def __init__(self):
         super(GeneratorAdversarialWithPixelMSELoss, self).__init__()
         self.adversarial_loss = nn.BCELoss()
-        self.mse_loss = nn.MSELoss(size_average=False)
+        self.mse_loss = nn.MSELoss()
 
     def forward(self, out_labels, target_labels, out_images, target_images):
         # Adversarial Loss
@@ -49,10 +58,10 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
         self.loss_network = loss_network
         self.adversarial_loss = nn.BCELoss()
-        self.mse_loss = nn.MSELoss(size_average=False)
+        self.mse_loss = nn.MSELoss()
         self.using_l1 = using_l1
         if self.using_l1:
-            self.l1_loss = nn.L1Loss(size_average=False)
+            self.l1_loss = nn.L1Loss()
 
     def forward(self, out_labels, target_labels, out_images, target_images):
         # Adversarial Loss
@@ -70,18 +79,13 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
 
 
 class PerceptualLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, loss_network):
         super(PerceptualLoss, self).__init__()
-        vgg = vgg16(pretrained=True)
-        self.vgg = nn.Sequential(*(list(vgg.features.children())[:36])).eval()
-
+        self.loss_network = loss_network
         self.mse = nn.MSELoss()
 
-        for param in self.vgg.parameters():
-            param.requires_grad = False
-
     def forward(self, x, target):
-        return self.mse(self.vgg(x), self.vgg(target).detach())
+        return self.mse(self.loss_network(x), self.loss_network(target).detach())
 
 
 class TotalVariationLoss(nn.Module):
