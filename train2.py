@@ -17,7 +17,7 @@ train_args = {
 train_set = DatasetFromFolder('data/train', upscale_factor=train_args['scale_factor'],
                               input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
-train_loader = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=12, pin_memory=True)
+train_loader = DataLoader(train_set, batch_size=32, shuffle=True, num_workers=12, pin_memory=True)
 
 
 def train():
