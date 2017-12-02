@@ -1,6 +1,6 @@
 import argparse
 import os
-from math import log10
+from math import log10, fabs
 
 import pandas as pd
 import torch.nn as nn
@@ -107,8 +107,6 @@ for epoch in range(1, NUM_EPOCHS + 1):
             real_img = real_img.cuda()
             real_label = real_label.cuda()
 
-        netD.zero_grad()
-
         # compute loss of real_img
         real_out = netD(real_img)
         d_loss_real = discriminator_criterion(real_out, real_label)
@@ -125,8 +123,10 @@ for epoch in range(1, NUM_EPOCHS + 1):
         d_loss_fake = discriminator_criterion(fake_out, fake_label)
         fake_scores = fake_out.data.sum()
 
-        # bp and optimize
         d_loss = d_loss_real + d_loss_fake
+
+        # bp and optimize
+        optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
@@ -134,19 +134,19 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         index = 1
-        # while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
-        #             index <= G_STOP_THRESHOLD):
-        netG.zero_grad()
-        # compute loss of fake_img
-        g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
-        # bp and optimize
-        g_loss.backward()
-        optimizerG.step()
-        fake_img = netG(z)
-        fake_out = netD(fake_img)
-        fake_scores = fake_out.data.sum()
-        g_update_first = False
-        index += 1
+        while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
+                    index <= G_STOP_THRESHOLD):
+            # compute loss of fake_img
+            g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
+            # bp and optimize
+            optimizerG.zero_grad()
+            g_loss.backward()
+            optimizerG.step()
+            fake_img = netG(z)
+            fake_out = netD(fake_img)
+            fake_scores = fake_out.data.sum()
+            g_update_first = False
+            index += 1
 
         g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
         running_g_loss += g_loss.data[0] * batch_size
