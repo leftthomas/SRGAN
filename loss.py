@@ -1,20 +1,6 @@
 import torch
 from torch import nn
-from torchvision.models.vgg import vgg19, vgg16
-
-
-# vgg19 loss network (default out with last relu feature map)
-def vgg19_loss_network(is_last=True):
-    vgg = vgg19(pretrained=True)
-    if is_last:
-        relu = nn.Sequential(*list(vgg.features)[:36])
-    else:
-        # second last
-        relu = nn.Sequential(*list(vgg.features)[:27])
-    for param in relu.parameters():
-        param.requires_grad = False
-    relu.eval()
-    return relu
+from torchvision.models.vgg import vgg16
 
 
 # Adversarial Loss with Content Loss
@@ -22,7 +8,7 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
     def __init__(self):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
         vgg = vgg16(pretrained=True)
-        loss_network = nn.Sequential(*(list(vgg.features)[:36])).eval()
+        loss_network = nn.Sequential(*list(vgg.features)).eval()
         for param in loss_network.parameters():
             param.requires_grad = False
         self.loss_network = loss_network
