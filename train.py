@@ -1,6 +1,6 @@
 import argparse
 import os
-from math import log10, fabs
+from math import log10
 
 import pandas as pd
 import torch.optim as optim
@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import DatasetFromFolder
-from loss import GeneratorAdversarialWithContentLoss
+from loss import GeneratorLoss
 from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
@@ -44,15 +44,13 @@ print('# generator parameters:', sum(param.numel() for param in netG.parameters(
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
-generator_criterion = GeneratorAdversarialWithContentLoss()
+generator_criterion = GeneratorLoss()
 
 if torch.cuda.is_available():
     netG.cuda()
     netD.cuda()
     generator_criterion.cuda()
 
-# optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
-# optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
 optimizerD = optim.Adam(netD.parameters())
 optimizerG = optim.Adam(netG.parameters())
 
@@ -103,10 +101,10 @@ for epoch in range(1, NUM_EPOCHS + 1):
         optimizerD.step()
 
         ############################
-        # (2) Update G network: maximize log(D(G(z)))
+        # (2) Update G network: minimize log(1 - D(G(z))) + Perception Loss + Image Loss + TV Loss
         ###########################
         index = 1
-        while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
+        while (((real_scores - fake_scores) / batch_size > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
             # compute loss of G network
             g_loss = generator_criterion(fake_out, fake_img, real_img)
