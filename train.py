@@ -127,7 +127,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
-        d_loss.backward()
+        d_loss.backward(retain_graph=True)
         optimizerD.step()
 
         ############################
@@ -142,9 +142,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
             # bp and optimize
             g_loss.backward()
             optimizerG.step()
-            # fake_img = netG(z)
-            # fake_out = netD(fake_img)
-            # fake_scores = fake_out.data.sum()
+            fake_img = netG(z)
+            fake_out = netD(fake_img)
+            fake_scores = fake_out.data.sum()
             g_update_first = False
             index += 1
 
