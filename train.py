@@ -3,7 +3,6 @@ import os
 from math import log10, fabs
 
 import pandas as pd
-import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
 import torchvision.transforms as transforms
@@ -68,13 +67,10 @@ else:
     generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
                                                               using_l1=True)
 
-discriminator_criterion = nn.BCELoss()
-
 if torch.cuda.is_available():
     netG = netG.cuda()
     netD = netD.cuda()
     generator_criterion = generator_criterion.cuda()
-    discriminator_criterion = discriminator_criterion.cuda()
 
 optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
 optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
@@ -96,8 +92,6 @@ for epoch in range(1, NUM_EPOCHS + 1):
         g_update_first = True
         batch_size = data.size(0)
         running_batch_sizes += batch_size
-        real_label = Variable(torch.ones(batch_size))
-        fake_label = Variable(torch.zeros(batch_size))
 
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -105,11 +99,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         real_img = Variable(target)
         if torch.cuda.is_available():
             real_img = real_img.cuda()
-            real_label = real_label.cuda()
 
         # compute loss of real_img
         real_out = netD(real_img)
-        d_loss_real = discriminator_criterion(real_out, real_label)
         real_scores = real_out.data.sum()
         running_real_scores += real_scores
 
@@ -117,13 +109,11 @@ for epoch in range(1, NUM_EPOCHS + 1):
         z = Variable(data)
         if torch.cuda.is_available():
             z = z.cuda()
-            fake_label = fake_label.cuda()
         fake_img = netG(z)
         fake_out = netD(fake_img)
-        d_loss_fake = discriminator_criterion(fake_out, fake_label)
         fake_scores = fake_out.data.sum()
 
-        d_loss = d_loss_real + d_loss_fake
+        d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
 
         # bp and optimize
         optimizerD.zero_grad()
@@ -137,7 +127,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
             # compute loss of fake_img
-            g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
+            g_loss = generator_criterion(fake_out, fake_img, real_img)
             # bp and optimize
             optimizerG.zero_grad()
             g_loss.backward()
@@ -148,10 +138,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
             g_update_first = False
             index += 1
 
-        g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
+        g_loss = generator_criterion(fake_out, fake_img, real_img)
         running_g_loss += g_loss.data[0] * batch_size
-        d_loss_fake = discriminator_criterion(fake_out, fake_label)
-        d_loss = d_loss_real + d_loss_fake
+        d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
         running_d_loss += d_loss.data[0] * batch_size
         running_fake_scores += fake_scores
 

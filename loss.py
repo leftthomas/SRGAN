@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torchvision.models.vgg import vgg19, vgg16
 
@@ -29,11 +30,10 @@ def vgg16_loss_network():
 class GeneratorAdversarialLoss(nn.Module):
     def __init__(self):
         super(GeneratorAdversarialLoss, self).__init__()
-        self.adversarial_loss = nn.BCELoss()
 
-    def forward(self, out_labels, target_labels, out_images=None, target_images=None):
+    def forward(self, out_labels, out_images=None, target_images=None):
         # Adversarial Loss
-        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        adversarial_loss = torch.mean(torch.log(1 - out_labels))
         return adversarial_loss
 
 
@@ -41,12 +41,11 @@ class GeneratorAdversarialLoss(nn.Module):
 class GeneratorAdversarialWithPixelMSELoss(nn.Module):
     def __init__(self):
         super(GeneratorAdversarialWithPixelMSELoss, self).__init__()
-        self.adversarial_loss = nn.BCELoss()
         self.mse_loss = nn.MSELoss()
 
-    def forward(self, out_labels, target_labels, out_images, target_images):
+    def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
-        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        adversarial_loss = torch.mean(torch.log(1 - out_labels))
         # Pixel MSE Loss
         mse_loss = self.mse_loss(out_images, target_images)
         return 1e-3 * adversarial_loss + mse_loss
@@ -57,15 +56,14 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
     def __init__(self, loss_network, using_l1=False):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
         self.loss_network = loss_network
-        self.adversarial_loss = nn.BCELoss()
         self.mse_loss = nn.MSELoss()
         self.using_l1 = using_l1
         if self.using_l1:
             self.l1_loss = nn.L1Loss()
 
-    def forward(self, out_labels, target_labels, out_images, target_images):
+    def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
-        adversarial_loss = self.adversarial_loss(out_labels, target_labels)
+        adversarial_loss = torch.mean(torch.log(1 - out_labels))
         # Content Loss
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
