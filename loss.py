@@ -1,5 +1,5 @@
 from torch import nn
-from torchvision.models.vgg import vgg19
+from torchvision.models.vgg import vgg19, vgg16
 
 
 # vgg19 loss network (default out with last relu feature map)
@@ -67,6 +67,30 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
             return 1e-3 * adversarial_loss + content_loss + 1e-1 * l1_loss
         else:
             return 1e-3 * adversarial_loss + content_loss
+
+
+class PerceptualLoss(nn.Module):
+    def __init__(self):
+        super(PerceptualLoss, self).__init__()
+        vgg = vgg16(pretrained=True)
+        self.vgg = nn.Sequential(*(list(vgg.features.children())[:36])).eval()
+        self.vgg = nn.DataParallel(self.vgg, device_ids=[0])
+
+        self.mse = nn.MSELoss()
+
+        for param in self.vgg.parameters():
+            param.requires_grad = False
+
+    def forward(self, x, target):
+        return self.mse(self.vgg(x), self.vgg(target).detach())
+
+
+class TotalVariationLoss(nn.Module):
+    def __init__(self):
+        super(TotalVariationLoss, self).__init__()
+
+    def forward(self, x):
+        return (((x[:, :, :-1, :] - x[:, :, 1:, :]) ** 2 + (x[:, :, :, :-1] - x[:, :, :, 1:]) ** 2) ** 1.25).mean()
 
 
 if __name__ == "__main__":

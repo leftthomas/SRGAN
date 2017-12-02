@@ -1,36 +1,23 @@
-import torch
-from misc import PerceptualLoss, TotalVariationLoss
 from torch import nn
 from torch import optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from torchvision import transforms, datasets
+from torchvision import transforms
 from tqdm import tqdm
 
+from data_utils import DatasetFromFolder
+from loss import PerceptualLoss, TotalVariationLoss
 from model import Generator, Discriminator
 
 train_args = {
-    'hr_size': 72,  # make sure that hr_size can be divided by scale_factor exactly
     'scale_factor': 4,  # should be power of 2
-    'g_lr': 1e-4,
-    'd_lr': 1e-4,
-    'train_set_path': 'data/train',
     'c': 0.01
 }
 
-train_ori_transform = transforms.Compose([
-    transforms.RandomCrop(train_args['hr_size']),
-    transforms.ToTensor()
-])
-train_lr_transform = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Scale(train_args['hr_size'] // train_args['scale_factor'], interpolation=3),
-    transforms.ToTensor()
-])
-
-train_set = datasets.ImageFolder(train_args['train_set_path'], train_ori_transform)
-train_loader = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=12,
-                          pin_memory=True)
+train_set = DatasetFromFolder('data/train', upscale_factor=train_args['scale_factor'],
+                              input_transform=transforms.ToTensor(),
+                              target_transform=transforms.ToTensor())
+train_loader = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=12, pin_memory=True)
 
 
 def train():
@@ -40,17 +27,16 @@ def train():
 
     d = Discriminator().cuda().train()
     d = nn.DataParallel(d, device_ids=[0])
-    g_optimizer = optim.RMSprop(g.parameters(), lr=train_args['g_lr'])
-    d_optimizer = optim.RMSprop(d.parameters(), lr=train_args['d_lr'])
+    g_optimizer = optim.RMSprop(g.parameters(), lr=1e-4)
+    d_optimizer = optim.RMSprop(d.parameters(), lr=1e-4)
 
     perceptual_criterion, tv_criterion = PerceptualLoss().cuda(), TotalVariationLoss().cuda()
 
     for epoch in range(1, 101):
         train_bar = tqdm(train_loader)
-        for data in train_bar:
-            hr_imgs, _ = data
-            lr_imgs = Variable(torch.stack([train_lr_transform(img) for img in hr_imgs], 0)).cuda()
+        for hr_imgs, lr_imgs in train_bar:
             hr_imgs = Variable(hr_imgs).cuda()
+            lr_imgs = Variable(lr_imgs).cuda()
             gen_hr_imgs = g(lr_imgs)
 
             # update d
