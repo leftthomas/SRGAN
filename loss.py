@@ -58,7 +58,7 @@ class PerceptualLoss(nn.Module):
         self.mse = nn.MSELoss()
 
     def forward(self, x, target):
-        return self.mse(self.loss_network(x), self.loss_network(target).detach())
+        return self.mse(self.loss_network(x), self.loss_network(target))
 
 
 class TotalVariationLoss(nn.Module):

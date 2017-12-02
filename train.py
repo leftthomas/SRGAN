@@ -102,15 +102,11 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_scores = fake_out.data.sum()
 
         d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
-        # d_loss = fake_out.mean() - real_out.mean()
 
         # bp and optimize
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
-        #
-        # for p in netD.parameters():
-        #     p.data.clamp_(-0.01, 0.01)
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
