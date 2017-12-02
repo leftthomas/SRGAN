@@ -26,31 +26,6 @@ def vgg16_loss_network():
     return relu
 
 
-# only Adversarial Loss
-class GeneratorAdversarialLoss(nn.Module):
-    def __init__(self):
-        super(GeneratorAdversarialLoss, self).__init__()
-
-    def forward(self, out_labels, out_images=None, target_images=None):
-        # Adversarial Loss
-        adversarial_loss = torch.mean(torch.log(1 - out_labels))
-        return adversarial_loss
-
-
-# Adversarial Loss with Pixel MSE Loss
-class GeneratorAdversarialWithPixelMSELoss(nn.Module):
-    def __init__(self):
-        super(GeneratorAdversarialWithPixelMSELoss, self).__init__()
-        self.mse_loss = nn.MSELoss()
-
-    def forward(self, out_labels, out_images, target_images):
-        # Adversarial Loss
-        adversarial_loss = torch.mean(torch.log(1 - out_labels))
-        # Pixel MSE Loss
-        mse_loss = self.mse_loss(out_images, target_images)
-        return 1e-3 * adversarial_loss + mse_loss
-
-
 # Adversarial Loss with Content Loss(default not with l1 loss)
 class GeneratorAdversarialWithContentLoss(nn.Module):
     def __init__(self, loss_network, using_l1=False):
@@ -95,5 +70,5 @@ class TotalVariationLoss(nn.Module):
 
 
 if __name__ == "__main__":
-    g_loss = GeneratorAdversarialLoss()
+    g_loss = GeneratorAdversarialWithContentLoss(vgg16_loss_network())
     print(g_loss)

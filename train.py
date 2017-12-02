@@ -14,8 +14,8 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import DatasetFromFolder
-from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
-    GeneratorAdversarialWithPixelMSELoss, PerceptualLoss, TotalVariationLoss, vgg16_loss_network
+from loss import vgg19_loss_network, GeneratorAdversarialWithContentLoss, PerceptualLoss, TotalVariationLoss, \
+    vgg16_loss_network
 from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
@@ -25,9 +25,6 @@ parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0
                     help='super resolution generator update threshold')
 parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[1, 10, 20, 30],
                     help='super resolution generator update stop threshold')
-parser.add_argument('--g_loss_type', default='GACL', type=str,
-                    choices=['GAL', 'GAML', 'GACL', 'GACLL', 'GACLV', 'GACLLV'],
-                    help='super resolution generator loss function type')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
 
 opt = parser.parse_args()
@@ -36,37 +33,21 @@ UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
 G_THRESHOLD = opt.g_threshold
 G_STOP_THRESHOLD = opt.g_stop_threshold
-G_LOSS_TYPE = opt.g_loss_type
 
 train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
 val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                             target_transform=transforms.ToTensor())
-train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True, pin_memory=True)
-val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False, pin_memory=True)
+train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
+val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
-if G_LOSS_TYPE == 'GAL':
-    generator_criterion = GeneratorAdversarialLoss()
-elif G_LOSS_TYPE == 'GAML':
-    generator_criterion = GeneratorAdversarialWithPixelMSELoss()
-elif G_LOSS_TYPE == 'GACL':
-    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=True),
-                                                              using_l1=False)
-elif G_LOSS_TYPE == 'GACLL':
-    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=True),
-                                                              using_l1=True)
-elif G_LOSS_TYPE == 'GACLV':
-    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
-                                                              using_l1=False)
-else:
-    # G_LOSS_TYPE == 'GACLLV'
-    generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
-                                                              using_l1=True)
+generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
+                                                          using_l1=True)
 
 perceptual_criterion, tv_criterion, mse_criterion = PerceptualLoss(
     vgg16_loss_network()), TotalVariationLoss(), nn.MSELoss()
@@ -120,16 +101,16 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_out = netD(fake_img)
         fake_scores = fake_out.data.sum()
 
-        # d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
-        d_loss = fake_out.mean() - real_out.mean()
+        d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
+        # d_loss = fake_out.mean() - real_out.mean()
 
         # bp and optimize
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
-
-        for p in netD.parameters():
-            p.data.clamp_(-0.01, 0.01)
+        #
+        # for p in netD.parameters():
+        #     p.data.clamp_(-0.01, 0.01)
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
