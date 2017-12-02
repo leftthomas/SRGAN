@@ -3,7 +3,6 @@ import os
 from math import log10, fabs
 
 import pandas as pd
-import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data
 import torchvision.transforms as transforms
@@ -14,8 +13,7 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import DatasetFromFolder
-from loss import vgg19_loss_network, GeneratorAdversarialWithContentLoss, PerceptualLoss, TotalVariationLoss, \
-    vgg16_loss_network
+from loss import GeneratorAdversarialWithContentLoss, vgg16_loss_network
 from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
@@ -46,19 +44,13 @@ print('# generator parameters:', sum(param.numel() for param in netG.parameters(
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
-generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg19_loss_network(is_last=False),
-                                                          using_l1=True)
-
-perceptual_criterion, tv_criterion, mse_criterion = PerceptualLoss(
-    vgg16_loss_network()), TotalVariationLoss(), nn.MSELoss()
+generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg16_loss_network(),
+                                                          using_l1=False)
 
 if torch.cuda.is_available():
     netG = netG.cuda()
     netD = netD.cuda()
     generator_criterion = generator_criterion.cuda()
-    perceptual_criterion = perceptual_criterion.cuda()
-    tv_criterion = tv_criterion.cuda()
-    mse_criterion = mse_criterion.cuda()
 
 optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
 optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
@@ -114,14 +106,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         index = 1
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
-            # compute loss of fake_img
-            g_mse_loss = mse_criterion(fake_img, real_img)
-            g_perceptual_loss = perceptual_criterion(fake_img, real_img)
-            g_tv_loss = tv_criterion(fake_img)
-            g_ad_loss = -netD(fake_img).mean()
-            g_loss = g_mse_loss + 0.006 * g_perceptual_loss + 2e-8 * g_tv_loss + 0.001 * g_ad_loss
-
-            # g_loss = generator_criterion(fake_out, fake_img, real_img)
+            # compute loss of G
+            g_loss = generator_criterion(fake_out, fake_img, real_img)
             # bp and optimize
             optimizerG.zero_grad()
             g_loss.backward()
@@ -132,13 +118,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             g_update_first = False
             index += 1
 
-        g_mse_loss = mse_criterion(fake_img, real_img)
-        g_perceptual_loss = perceptual_criterion(fake_img, real_img)
-        g_tv_loss = tv_criterion(fake_img)
-        g_ad_loss = -netD(fake_img).mean()
-        g_loss = g_mse_loss + 0.006 * g_perceptual_loss + 2e-8 * g_tv_loss + 0.001 * g_ad_loss
-
-        # g_loss = generator_criterion(fake_out, fake_img, real_img)
+        g_loss = generator_criterion(fake_out, fake_img, real_img)
         running_g_loss += g_loss.data[0] * batch_size
         d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
         running_d_loss += d_loss.data[0] * batch_size

@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 from torchvision.models.vgg import vgg19, vgg16
 
@@ -38,35 +37,21 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
 
     def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
-        adversarial_loss = torch.mean(torch.log(1 - out_labels))
+        # adversarial_loss = torch.mean(torch.log(1 - out_labels))
+        adversarial_loss = -out_labels.mean()
         # Content Loss
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
         content_loss = self.mse_loss(features_input, features_target)
+        image_loss = self.mse_loss(out_images, target_images)
+        g_tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
+        out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
         if self.using_l1:
             # L1 Loss
             l1_loss = self.l1_loss(out_images, target_images)
             return 1e-3 * adversarial_loss + content_loss + 1e-1 * l1_loss
         else:
-            return 1e-3 * adversarial_loss + content_loss
-
-
-class PerceptualLoss(nn.Module):
-    def __init__(self, loss_network):
-        super(PerceptualLoss, self).__init__()
-        self.loss_network = loss_network
-        self.mse = nn.MSELoss()
-
-    def forward(self, x, target):
-        return self.mse(self.loss_network(x), self.loss_network(target))
-
-
-class TotalVariationLoss(nn.Module):
-    def __init__(self):
-        super(TotalVariationLoss, self).__init__()
-
-    def forward(self, x):
-        return (((x[:, :, :-1, :] - x[:, :, 1:, :]) ** 2 + (x[:, :, :, :-1] - x[:, :, :, 1:]) ** 2) ** 1.25).mean()
+            return image_loss + 0.001 * adversarial_loss + 0.006 * content_loss + 2e-8 * g_tv_loss
 
 
 if __name__ == "__main__":
