@@ -40,11 +40,13 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         features_input = self.loss_network(out_images)
         features_target = self.loss_network(target_images)
         content_loss = self.mse_loss(features_input, features_target)
+        # Image Loss
         image_loss = self.mse_loss(out_images, target_images)
-        g_tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
+        # TV Loss
+        tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
             out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
 
-        return image_loss + 0.001 * adversarial_loss + 0.006 * content_loss + 2e-8 * g_tv_loss
+        return image_loss + 0.001 * adversarial_loss + 0.006 * content_loss + 2e-8 * tv_loss
 
 
 if __name__ == "__main__":
