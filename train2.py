@@ -22,11 +22,11 @@ train_loader = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=12
 
 def train():
     g = Generator(scale_factor=train_args['scale_factor']).cuda().train()
-    g = nn.DataParallel(g, device_ids=[0])
+    # g = nn.DataParallel(g, device_ids=[0])
     mse_criterion = nn.MSELoss().cuda()
 
     d = Discriminator().cuda().train()
-    d = nn.DataParallel(d, device_ids=[0])
+    # d = nn.DataParallel(d, device_ids=[0])
     g_optimizer = optim.RMSprop(g.parameters(), lr=1e-4)
     d_optimizer = optim.RMSprop(d.parameters(), lr=1e-4)
 
