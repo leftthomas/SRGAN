@@ -17,16 +17,14 @@ class GeneratorLoss(nn.Module):
         # Adversarial Loss
         adversarial_loss = torch.mean(torch.log(1 - out_labels))
         # Perception Loss
-        features_input = self.loss_network(out_images)
-        features_target = self.loss_network(target_images)
-        perception_loss = self.mse_loss(features_input, features_target)
+        perception_loss = self.mse_loss(self.loss_network(out_images), self.loss_network(target_images))
         # Image Loss
         image_loss = self.mse_loss(out_images, target_images)
         # TV Loss
         tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
             out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
 
-        return image_loss + 0.001 * adversarial_loss + 0.006 * perception_loss + 2e-8 * tv_loss
+        return image_loss + 1e-3 * adversarial_loss + 6e-3 * perception_loss + 2e-8 * tv_loss
 
 
 if __name__ == "__main__":

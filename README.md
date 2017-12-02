@@ -51,9 +51,9 @@ optional arguments:
 ```
 The output val super resolution images are on `images` directory.
 
-### Test
+### Test Benchmark Images
 ```
-python test.py
+python test_benchmark.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 4]
