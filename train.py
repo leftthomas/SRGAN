@@ -42,8 +42,8 @@ train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input
                               target_transform=transforms.ToTensor())
 val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                             target_transform=transforms.ToTensor())
-train_loader = DataLoader(dataset=train_set, num_workers=12, batch_size=64, shuffle=True, pin_memory=True)
-val_loader = DataLoader(dataset=val_set, num_workers=12, batch_size=64, shuffle=False, pin_memory=True)
+train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True, pin_memory=True)
+val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False, pin_memory=True)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
@@ -76,8 +76,8 @@ if torch.cuda.is_available():
     generator_criterion = generator_criterion.cuda()
     discriminator_criterion = discriminator_criterion.cuda()
 
-optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
-optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
+optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
+optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
 
 results_real_scores = []
 results_fake_scores = []
@@ -107,6 +107,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
             real_img = real_img.cuda()
             real_label = real_label.cuda()
 
+        netD.zero_grad()
+
         # compute loss of real_img
         real_out = netD(real_img)
         d_loss_real = discriminator_criterion(real_out, real_label)
@@ -125,8 +127,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         # bp and optimize
         d_loss = d_loss_real + d_loss_fake
-        optimizerD.zero_grad()
-        d_loss.backward(retain_graph=True)
+        d_loss.backward()
         optimizerD.step()
 
         ############################
@@ -135,10 +136,10 @@ for epoch in range(1, NUM_EPOCHS + 1):
         index = 1
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
+            netG.zero_grad()
             # compute loss of fake_img
             g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
             # bp and optimize
-            optimizerG.zero_grad()
             g_loss.backward()
             optimizerG.step()
             fake_img = netG(z)
@@ -175,14 +176,14 @@ for epoch in range(1, NUM_EPOCHS + 1):
         batch_size = val_data.size(0)
         valing_batch_sizes += batch_size
         if epoch == 1:
-            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=2)
+            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=8, padding=5)
         lr = Variable(val_data, volatile=True)
         hr = Variable(val_target, volatile=True)
         if torch.cuda.is_available():
             lr = lr.cuda()
             hr = hr.cuda()
         sr = netG(lr)
-        utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=2)
+        utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
         valing_mse += batch_mse * batch_size
