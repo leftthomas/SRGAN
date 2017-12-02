@@ -159,16 +159,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     torch.save(netD.state_dict(), 'epochs/netD_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     # save loss\scores\psnr\ssim
-    results['real_scores'] = results['real_scores'].append(
-        running_results['real_scores'] / running_results['batch_sizes'])
-    results['fake_scores'] = results['fake_scores'].append(
-        running_results['fake_scores'] / running_results['batch_sizes'])
-    results['g_loss'] = results['g_loss'].append(
-        running_results['g_loss'] / running_results['g_loss'])
-    results['d_loss'] = results['d_loss'].append(
-        running_results['d_loss'] / running_results['batch_sizes'])
-    results['psnr'] = results['psnr'].append(valing_results['psnr'])
-    results['ssim'] = results['ssim'].append(valing_results['ssim'])
+    results['real_scores'].append(running_results['real_scores'] / running_results['batch_sizes'])
+    results['fake_scores'].append(running_results['fake_scores'] / running_results['batch_sizes'])
+    results['g_loss'].append(running_results['g_loss'] / running_results['g_loss'])
+    results['d_loss'].append(running_results['d_loss'] / running_results['batch_sizes'])
+    results['psnr'].append(valing_results['psnr'])
+    results['ssim'].append(valing_results['ssim'])
 
     if epoch % 10 == 0 and epoch != 0:
         out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'

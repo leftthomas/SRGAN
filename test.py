@@ -23,16 +23,8 @@ opt = parser.parse_args()
 UPSCALE_FACTOR = opt.upscale_factor
 MODEL_NAME = opt.model_name
 
-results_Set5_psnr = []
-results_Set5_ssim = []
-results_Set14_psnr = []
-results_Set14_ssim = []
-results_BSD100_psnr = []
-results_BSD100_ssim = []
-results_Urban100_psnr = []
-results_Urban100_ssim = []
-results_SunHays80_psnr = []
-results_SunHays80_ssim = []
+results = {'Set5': {'psnr': [], 'ssim': []}, 'Set14': {'psnr': [], 'ssim': []}, 'BSD100': {'psnr': [], 'ssim': []},
+           'Urban100': {'psnr': [], 'ssim': []}, 'SunHays80': {'psnr': [], 'ssim': []}}
 
 data_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
 target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
@@ -63,50 +55,25 @@ for image_name in tqdm(images_name, desc='convert LR images to SR images'):
     out_img = ToPILImage()(out[0].data.cpu())
     out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
     # save psnr\ssim
-    if image_name.startswith('Set5'):
-        results_Set5_psnr.append(psnr)
-        results_Set5_ssim.append(ssim)
-    elif image_name.startswith('Set14'):
-        results_Set14_psnr.append(psnr)
-        results_Set14_ssim.append(ssim)
-    elif image_name.startswith('BSD100'):
-        results_BSD100_psnr.append(psnr)
-        results_BSD100_ssim.append(ssim)
-    elif image_name.startswith('Urban100'):
-        results_Urban100_psnr.append(psnr)
-        results_Urban100_ssim.append(ssim)
-    elif image_name.startswith('SunHays80'):
-        results_SunHays80_psnr.append(psnr)
-        results_SunHays80_ssim.append(ssim)
+    results[image_name.split('_')[0]]['psnr'].append(psnr)
+    results[image_name.split('_')[0]]['ssim'].append(psnr)
 
 out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
 if not os.path.exists(out_path):
     os.makedirs(out_path)
-data = {}
-index = []
-psnr = []
-ssim = []
-if len(results_Set5_psnr) > 0 and len(results_Set5_ssim) > 0:
-    psnr.append(np.array(results_Set5_psnr).mean())
-    ssim.append(np.array(results_Set5_ssim).mean())
-    index.append('Set5')
-if len(results_Set14_psnr) > 0 and len(results_Set14_ssim) > 0:
-    psnr.append(np.array(results_Set14_psnr).mean())
-    ssim.append(np.array(results_Set14_ssim).mean())
-    index.append('Set14')
-if len(results_BSD100_psnr) > 0 and len(results_BSD100_ssim) > 0:
-    psnr.append(np.array(results_BSD100_psnr).mean())
-    ssim.append(np.array(results_BSD100_ssim).mean())
-    index.append('BSD100')
-if len(results_Urban100_psnr) > 0 and len(results_Urban100_ssim) > 0:
-    psnr.append(np.array(results_Urban100_psnr).mean())
-    ssim.append(np.array(results_Urban100_ssim).mean())
-    index.append('Urban100')
-if len(results_SunHays80_psnr) > 0 and len(results_SunHays80_ssim) > 0:
-    psnr.append(np.array(results_SunHays80_psnr).mean())
-    ssim.append(np.array(results_SunHays80_ssim).mean())
-    index.append('SunHays80')
-data['PSNR'] = psnr
-data['SSIM'] = ssim
-data_frame = pd.DataFrame(data, index)
+
+saved_results = {'psnr': [], 'ssim': []}
+for item in results.values():
+    psnr = np.array(item['psnr'])
+    ssim = np.array(item['ssim'])
+    if (len(psnr) == 0) or (len(ssim) == 0):
+        psnr = 'No data'
+        ssim = 'No data'
+    else:
+        psnr = psnr.mean()
+        ssim = ssim.mean()
+    saved_results['psnr'].append(psnr)
+    saved_results['ssim'].append(ssim)
+
+data_frame = pd.DataFrame(saved_results, results.keys())
 data_frame.to_csv(out_path + 'test_results.csv', index_label='DataSet')
