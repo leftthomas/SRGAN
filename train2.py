@@ -17,16 +17,16 @@ train_args = {
 train_set = DatasetFromFolder('data/train', upscale_factor=train_args['scale_factor'],
                               input_transform=transforms.ToTensor(),
                               target_transform=transforms.ToTensor())
-train_loader = DataLoader(train_set, batch_size=16, shuffle=True, num_workers=12, pin_memory=True)
+train_loader = DataLoader(train_set, batch_size=64, shuffle=True, num_workers=12, pin_memory=True)
 
 
 def train():
     g = Generator(scale_factor=train_args['scale_factor']).cuda().train()
-    g = nn.DataParallel(g, device_ids=[0])
+    g = nn.DataParallel(g, device_ids=[1])
     mse_criterion = nn.MSELoss().cuda()
 
     d = Discriminator().cuda().train()
-    d = nn.DataParallel(d, device_ids=[0])
+    d = nn.DataParallel(d, device_ids=[1])
     g_optimizer = optim.RMSprop(g.parameters(), lr=1e-4)
     d_optimizer = optim.RMSprop(d.parameters(), lr=1e-4)
 
@@ -34,9 +34,9 @@ def train():
 
     for epoch in range(1, 101):
         train_bar = tqdm(train_loader)
-        for hr_imgs, lr_imgs in train_bar:
-            hr_imgs = Variable(hr_imgs).cuda()
+        for lr_imgs, hr_imgs in train_bar:
             lr_imgs = Variable(lr_imgs).cuda()
+            hr_imgs = Variable(hr_imgs).cuda()
             gen_hr_imgs = g(lr_imgs)
 
             # update d

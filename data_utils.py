@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 def is_image_file(filename):
-    return any(filename.endswith(extension) for extension in ['.png', '.jpg', '.jpeg'])
+    return any(filename.endswith(extension) for extension in ['.png', '.jpg', '.jpeg', '.PNG', '.JPG', '.JPEG'])
 
 
 def calculate_valid_crop_size(crop_size, upscale_factor):
