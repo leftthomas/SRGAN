@@ -26,15 +26,12 @@ def vgg16_loss_network():
     return relu
 
 
-# Adversarial Loss with Content Loss(default not with l1 loss)
+# Adversarial Loss with Content Loss
 class GeneratorAdversarialWithContentLoss(nn.Module):
-    def __init__(self, loss_network, using_l1=False):
+    def __init__(self, loss_network):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
         self.loss_network = loss_network
         self.mse_loss = nn.MSELoss()
-        self.using_l1 = using_l1
-        if self.using_l1:
-            self.l1_loss = nn.L1Loss()
 
     def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
@@ -46,12 +43,8 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
         image_loss = self.mse_loss(out_images, target_images)
         g_tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
             out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
-        if self.using_l1:
-            # L1 Loss
-            l1_loss = self.l1_loss(out_images, target_images)
-            return 1e-3 * adversarial_loss + 0.006 * content_loss + 1e-4 * l1_loss
-        else:
-            return image_loss + 0.001 * adversarial_loss + 0.006 * content_loss + 2e-8 * g_tv_loss
+
+        return image_loss + 0.001 * adversarial_loss + 0.006 * content_loss + 2e-8 * g_tv_loss
 
 
 if __name__ == "__main__":

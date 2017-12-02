@@ -44,8 +44,7 @@ print('# generator parameters:', sum(param.numel() for param in netG.parameters(
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
-generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg16_loss_network(),
-                                                          using_l1=False)
+generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg16_loss_network())
 
 if torch.cuda.is_available():
     netG.cuda()
@@ -100,9 +99,6 @@ for epoch in range(1, NUM_EPOCHS + 1):
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
-
-        # for p in netD.parameters():
-        #     p.data.clamp_(-0.01, 0.01)
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
