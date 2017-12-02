@@ -48,9 +48,9 @@ generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg16_los
                                                           using_l1=False)
 
 if torch.cuda.is_available():
-    netG = netG.cuda()
-    netD = netD.cuda()
-    generator_criterion = generator_criterion.cuda()
+    netG.cuda()
+    netD.cuda()
+    generator_criterion.cuda()
 
 optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
 optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
@@ -80,12 +80,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
         if torch.cuda.is_available():
             real_img = real_img.cuda()
 
-        # compute loss of real_img
+        # compute score of real_img
         real_out = netD(real_img)
         real_scores = real_out.data.sum()
         running_real_scores += real_scores
 
-        # compute loss of fake_img
+        # compute score of fake_img
         z = Variable(data)
         if torch.cuda.is_available():
             z = z.cuda()
@@ -93,6 +93,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_out = netD(fake_img)
         fake_scores = fake_out.data.sum()
 
+        # compute loss of D network
         d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
 
         # bp and optimize
@@ -100,9 +101,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
-        for p in netD.parameters():
-            p.data.clamp_(-0.01, 0.01)
-
+        # for p in netD.parameters():
+        #     p.data.clamp_(-0.01, 0.01)
+        #
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
