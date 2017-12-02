@@ -36,8 +36,8 @@ train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input
                               target_transform=transforms.ToTensor())
 val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                             target_transform=transforms.ToTensor())
-train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
-val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
+train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=16, shuffle=True)
+val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=16, shuffle=False)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
@@ -150,14 +150,14 @@ for epoch in range(1, NUM_EPOCHS + 1):
         batch_size = val_data.size(0)
         valing_batch_sizes += batch_size
         if epoch == 1:
-            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=8, padding=5)
+            utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=4, padding=5)
         lr = Variable(val_data, volatile=True)
         hr = Variable(val_target, volatile=True)
         if torch.cuda.is_available():
             lr = lr.cuda()
             hr = hr.cuda()
         sr = netG(lr)
-        utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
+        utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
         valing_mse += batch_mse * batch_size
