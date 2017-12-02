@@ -142,9 +142,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
             # bp and optimize
             g_loss.backward()
             optimizerG.step()
-            fake_img = netG(z)
-            fake_out = netD(fake_img)
-            fake_scores = fake_out.data.sum()
+            # fake_img = netG(z)
+            # fake_out = netD(fake_img)
+            # fake_scores = fake_out.data.sum()
             g_update_first = False
             index += 1
 
