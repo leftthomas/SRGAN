@@ -54,23 +54,15 @@ if torch.cuda.is_available():
 optimizerD = optim.Adam(netD.parameters())
 optimizerG = optim.Adam(netG.parameters())
 
-results_real_scores = []
-results_fake_scores = []
-results_d_loss = []
-results_g_loss = []
-results_psnr = []
-results_ssim = []
+results = {'real_scores': [], 'fake_scores': [], 'd_loss': [], 'g_loss': [], 'psnr': [], 'ssim': []}
+
 for epoch in range(1, NUM_EPOCHS + 1):
     train_bar = tqdm(train_loader)
-    running_real_scores = 0
-    running_fake_scores = 0
-    running_batch_sizes = 0
-    running_d_loss = 0
-    running_g_loss = 0
+    running_results = {'real_scores': 0, 'fake_scores': 0, 'batch_sizes': 0, 'd_loss': 0, 'g_loss': 0}
     for data, target in train_bar:
         g_update_first = True
         batch_size = data.size(0)
-        running_batch_sizes += batch_size
+        running_results['batch_sizes'] += batch_size
 
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -82,7 +74,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # compute score of real_img
         real_out = netD(real_img)
         real_scores = real_out.data.sum()
-        running_real_scores += real_scores
+        running_results['real_scores'] += real_scores
 
         # compute score of fake_img
         z = Variable(data)
@@ -119,31 +111,29 @@ for epoch in range(1, NUM_EPOCHS + 1):
             index += 1
 
         g_loss = generator_criterion(fake_out, fake_img, real_img)
-        running_g_loss += g_loss.data[0] * batch_size
+        running_results['g_loss'] += g_loss.data[0] * batch_size
         d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
-        running_d_loss += d_loss.data[0] * batch_size
-        running_fake_scores += fake_scores
+        running_results['d_loss'] += d_loss.data[0] * batch_size
+        running_results['fake_scores'] += fake_scores
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f'
                                        % (
-                                           epoch, NUM_EPOCHS, running_d_loss / running_batch_sizes,
-                                           running_g_loss / running_batch_sizes,
-                                           running_real_scores / running_batch_sizes,
-                                           running_fake_scores / running_batch_sizes))
+                                           epoch, NUM_EPOCHS,
+                                           running_results['d_loss'] / running_results['batch_sizes'],
+                                           running_results['g_loss'] / running_results['batch_sizes'],
+                                           running_results['real_scores'] / running_results['batch_sizes'],
+                                           running_results['fake_scores'] / running_results['batch_sizes']))
 
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     val_bar = tqdm(val_loader)
     index = 1
-    valing_mse = 0
-    valing_ssims = 0
-    valing_psnr = 0
-    valing_ssim = 0
-    valing_batch_sizes = 0
+    valing_results = {'mse': 0, 'ssims': 0, 'psnr': 0, 'ssim': 0, 'batch_sizes': 0}
+
     for val_data, val_target in val_bar:
         batch_size = val_data.size(0)
-        valing_batch_sizes += batch_size
+        valing_results['batch_sizes'] += batch_size
         if epoch == 1:
             utils.save_image(val_target, out_path + 'HR_batch_%d.png' % index, nrow=4, padding=5)
         lr = Variable(val_data, volatile=True)
@@ -155,33 +145,38 @@ for epoch in range(1, NUM_EPOCHS + 1):
         utils.save_image(sr.data.cpu(), out_path + 'SR_epoch_%d_batch_%d.png' % (epoch, index), nrow=4, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
-        valing_mse += batch_mse * batch_size
+        valing_results['mse'] += batch_mse * batch_size
         batch_ssim = pytorch_ssim.ssim(sr, hr).data.cpu().numpy()
-        valing_ssims += batch_ssim * batch_size
-        valing_psnr = 10 * log10(1 / (valing_mse / valing_batch_sizes))
-        valing_ssim = valing_ssims / valing_batch_sizes
+        valing_results['ssims'] += batch_ssim * batch_size
+        valing_results['psnr'] = 10 * log10(1 / (valing_results['mse'] / valing_results['batch_sizes']))
+        valing_results['ssim'] = valing_results['ssims'] / valing_results['batch_sizes']
         val_bar.set_description(
-            desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (valing_psnr, valing_ssim))
+            desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
+                valing_results['psnr'], valing_results['ssim']))
         index += 1
 
     # save model parameters
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     torch.save(netD.state_dict(), 'epochs/netD_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     # save loss\scores\psnr\ssim
-    results_real_scores.append(running_real_scores / running_batch_sizes)
-    results_fake_scores.append(running_fake_scores / running_batch_sizes)
-    results_g_loss.append(running_g_loss / running_batch_sizes)
-    results_d_loss.append(running_d_loss / running_batch_sizes)
-    results_psnr.append(valing_psnr)
-    results_ssim.append(valing_ssim)
+    results['real_scores'] = results['real_scores'].append(
+        running_results['real_scores'] / running_results['batch_sizes'])
+    results['fake_scores'] = results['fake_scores'].append(
+        running_results['fake_scores'] / running_results['batch_sizes'])
+    results['g_loss'] = results['g_loss'].append(
+        running_results['g_loss'] / running_results['g_loss'])
+    results['d_loss'] = results['d_loss'].append(
+        running_results['d_loss'] / running_results['batch_sizes'])
+    results['psnr'] = results['psnr'].append(valing_results['psnr'])
+    results['ssim'] = results['ssim'].append(valing_results['ssim'])
 
     if epoch % 10 == 0 and epoch != 0:
         out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
         if not os.path.exists(out_path):
             os.makedirs(out_path)
         data_frame = pd.DataFrame(data=
-                                  {'Loss_D': results_d_loss, 'Loss_G': results_g_loss,
-                                   'D(x)': results_real_scores,
-                                   'D(G(z))': results_fake_scores, 'PSNR': results_psnr, 'SSIM': results_ssim},
+                                  {'Loss_D': results['d_loss'], 'Loss_G': results['g_loss'],
+                                   'D(x)': results['real_scores'],
+                                   'D(G(z))': results['fake_scores'], 'PSNR': results['psnr'], 'SSIM': results['ssim']},
                                   index=range(1, epoch + 1))
         data_frame.to_csv(out_path + 'train_results.csv', index_label='Epoch')
