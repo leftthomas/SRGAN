@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import DatasetFromFolder
-from loss import GeneratorAdversarialWithContentLoss, vgg16_loss_network
+from loss import GeneratorAdversarialWithContentLoss
 from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
@@ -44,7 +44,7 @@ print('# generator parameters:', sum(param.numel() for param in netG.parameters(
 netD = Discriminator()
 print('# discriminator parameters:', sum(param.numel() for param in netD.parameters()))
 
-generator_criterion = GeneratorAdversarialWithContentLoss(loss_network=vgg16_loss_network())
+generator_criterion = GeneratorAdversarialWithContentLoss()
 
 if torch.cuda.is_available():
     netG.cuda()
