@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torch import optim
 from torch.autograd import Variable
@@ -55,6 +56,10 @@ def train():
             g_loss = g_mse_loss + 0.006 * g_perceptual_loss + 2e-8 * g_tv_loss + 0.001 * g_ad_loss
             g_loss.backward()
             g_optimizer.step()
+
+        # save model parameters
+        torch.save(g.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (train_args['scale_factor'], epoch))
+        torch.save(d.state_dict(), 'epochs/netD_epoch_%d_%d.pth' % (train_args['scale_factor'], epoch))
 
 
 if __name__ == '__main__':
