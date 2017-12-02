@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import pytorch_ssim
 from data_utils import is_image_file
-from model import CapsuleGenerator
+from model import Generator
 
 parser = argparse.ArgumentParser(description='Test Super Resolution')
 parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
@@ -38,7 +38,7 @@ data_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
 target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
 images_name = [x for x in listdir(data_path) if is_image_file(x)]
 
-model = CapsuleGenerator(upscale_factor=UPSCALE_FACTOR)
+model = Generator(UPSCALE_FACTOR)
 if torch.cuda.is_available():
     model = model.cuda()
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))

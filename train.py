@@ -16,7 +16,7 @@ import pytorch_ssim
 from data_utils import DatasetFromFolder
 from loss import GeneratorAdversarialLoss, vgg19_loss_network, GeneratorAdversarialWithContentLoss, \
     GeneratorAdversarialWithPixelMSELoss
-from srgan import Generator, Discriminator
+from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 3, 4, 8],
@@ -42,8 +42,8 @@ train_set = DatasetFromFolder('data/train', upscale_factor=UPSCALE_FACTOR, input
                               target_transform=transforms.ToTensor())
 val_set = DatasetFromFolder('data/val', upscale_factor=UPSCALE_FACTOR, input_transform=transforms.ToTensor(),
                             target_transform=transforms.ToTensor())
-train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=4, shuffle=True)
-val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=4, shuffle=False)
+train_loader = DataLoader(dataset=train_set, num_workers=12, batch_size=64, shuffle=True, pin_memory=True)
+val_loader = DataLoader(dataset=val_set, num_workers=12, batch_size=64, shuffle=False, pin_memory=True)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))

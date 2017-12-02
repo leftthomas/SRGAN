@@ -5,7 +5,7 @@ from PIL import Image
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 
-from model import CapsuleGenerator
+from model import Generator
 
 parser = argparse.ArgumentParser(description='Test Super Resolution')
 parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
@@ -17,7 +17,7 @@ UPSCALE_FACTOR = opt.upscale_factor
 IMAGE_NAME = opt.image_name
 MODEL_NAME = opt.model_name
 
-model = CapsuleGenerator(upscale_factor=UPSCALE_FACTOR)
+model = Generator(UPSCALE_FACTOR)
 if torch.cuda.is_available():
     model = model.cuda()
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
