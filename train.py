@@ -101,9 +101,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
-        # for p in netD.parameters():
-        #     p.data.clamp_(-0.01, 0.01)
-        #
+        for p in netD.parameters():
+            p.data.clamp_(-0.01, 0.01)
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
@@ -111,7 +110,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         index = 1
         while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
                     index <= G_STOP_THRESHOLD):
-            # compute loss of G
+            # compute loss of G network
             g_loss = generator_criterion(fake_out, fake_img, real_img)
             # bp and optimize
             optimizerG.zero_grad()
