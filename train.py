@@ -1,6 +1,6 @@
 import argparse
 import os
-from math import log10, fabs
+from math import log10
 
 import pandas as pd
 import torch.nn as nn
@@ -134,19 +134,19 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         index = 1
-        while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
-                    index <= G_STOP_THRESHOLD):
-            netG.zero_grad()
-            # compute loss of fake_img
-            g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
-            # bp and optimize
-            g_loss.backward()
-            optimizerG.step()
-            fake_img = netG(z)
-            fake_out = netD(fake_img)
-            fake_scores = fake_out.data.sum()
-            g_update_first = False
-            index += 1
+        # while ((fabs((real_scores - fake_scores) / batch_size) > G_THRESHOLD) or g_update_first) and (
+        #             index <= G_STOP_THRESHOLD):
+        netG.zero_grad()
+        # compute loss of fake_img
+        g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
+        # bp and optimize
+        g_loss.backward()
+        optimizerG.step()
+        fake_img = netG(z)
+        fake_out = netD(fake_img)
+        fake_scores = fake_out.data.sum()
+        g_update_first = False
+        index += 1
 
         g_loss = generator_criterion(fake_out, real_label, fake_img, real_img)
         running_g_loss += g_loss.data[0] * batch_size
