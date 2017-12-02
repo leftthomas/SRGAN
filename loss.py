@@ -74,7 +74,7 @@ class PerceptualLoss(nn.Module):
         super(PerceptualLoss, self).__init__()
         vgg = vgg16(pretrained=True)
         self.vgg = nn.Sequential(*(list(vgg.features.children())[:36])).eval()
-        self.vgg = nn.DataParallel(self.vgg, device_ids=[1])
+        self.vgg = nn.DataParallel(self.vgg, device_ids=[0])
 
         self.mse = nn.MSELoss()
 
