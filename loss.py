@@ -17,19 +17,14 @@ def vgg19_loss_network(is_last=True):
     return relu
 
 
-# vgg16 loss network
-def vgg16_loss_network():
-    vgg = vgg16(pretrained=True)
-    relu = nn.Sequential(*(list(vgg.features.children())[:36])).eval()
-    for param in relu.parameters():
-        param.requires_grad = False
-    return relu
-
-
 # Adversarial Loss with Content Loss
 class GeneratorAdversarialWithContentLoss(nn.Module):
-    def __init__(self, loss_network):
+    def __init__(self):
         super(GeneratorAdversarialWithContentLoss, self).__init__()
+        vgg = vgg16(pretrained=True)
+        loss_network = nn.Sequential(*(list(vgg.features)[:36])).eval()
+        for param in loss_network.parameters():
+            param.requires_grad = False
         self.loss_network = loss_network
         self.mse_loss = nn.MSELoss()
 
@@ -50,5 +45,5 @@ class GeneratorAdversarialWithContentLoss(nn.Module):
 
 
 if __name__ == "__main__":
-    g_loss = GeneratorAdversarialWithContentLoss(vgg16_loss_network())
+    g_loss = GeneratorAdversarialWithContentLoss()
     print(g_loss)
