@@ -17,7 +17,7 @@ UPSCALE_FACTOR = opt.upscale_factor
 IMAGE_NAME = opt.image_name
 MODEL_NAME = opt.model_name
 
-model = Generator(UPSCALE_FACTOR).eval()
+model = Generator(UPSCALE_FACTOR)
 if torch.cuda.is_available():
     model = model.cuda()
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
