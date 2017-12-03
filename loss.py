@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torchvision.models.vgg import vgg16
 
@@ -14,7 +15,7 @@ class GeneratorLoss(nn.Module):
 
     def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
-        adversarial_loss = - out_labels.mean()
+        adversarial_loss = torch.mean(torch.log(1 - out_labels))
         # Perception Loss
         perception_loss = self.mse_loss(self.loss_network(out_images), self.loss_network(target_images))
         # Image Loss

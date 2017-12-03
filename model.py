@@ -21,7 +21,7 @@ class Generator(nn.Module):
         self.block6 = ResidualBlock(64)
         self.block7 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.PReLU()
+            nn.BatchNorm2d(64)
         )
         block8 = [UpsampleBLock(64, 2) for _ in range(upsample_block_num)]
         block8.append(nn.Conv2d(64, 3, kernel_size=9, padding=4))
@@ -45,45 +45,49 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.net = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, padding=1),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(128, 256, kernel_size=3, padding=1),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(256, 512, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
             nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2),
 
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(512, 1024, kernel_size=1),
-            nn.LeakyReLU(),
-            nn.Conv2d(1024, 1, kernel_size=1)
+            nn.AdaptiveAvgPool2d(1)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(512, 1024),
+            nn.LeakyReLU(0.2),
+            nn.Linear(1024, 1)
         )
 
     def forward(self, x):
         batch_size = x.size(0)
-        return self.net(x).view(batch_size)
+        x = self.net(x)
+        x = x.view(batch_size, -1)
+        return F.sigmoid(self.classifier(x))
 
 
 class ResidualBlock(nn.Module):

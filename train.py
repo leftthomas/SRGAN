@@ -51,10 +51,10 @@ if torch.cuda.is_available():
     netD.cuda()
     generator_criterion.cuda()
 
-# optimizerD = optim.Adam(netD.parameters())
-# optimizerG = optim.Adam(netG.parameters())
-optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
-optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
+optimizerD = optim.Adam(netD.parameters())
+optimizerG = optim.Adam(netG.parameters())
+# optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
+# optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
 
 
 results = {'real_scores': [], 'fake_scores': [], 'd_loss': [], 'g_loss': [], 'psnr': [], 'ssim': []}
@@ -88,16 +88,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
         fake_scores = fake_out.data.sum()
 
         # compute loss of D network
-        # d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
-        d_loss = fake_out.mean() - real_out.mean()
+        d_loss = - torch.mean(torch.log(real_out) + torch.log(1 - fake_out))
 
         # bp and optimize
         optimizerD.zero_grad()
         d_loss.backward(retain_graph=True)
         optimizerD.step()
-
-        for p in netD.parameters():
-            p.data.clamp_(-0.01, 0.01)
 
         ############################
         # (2) Update G network: minimize log(1 - D(G(z))) + Perception Loss + Image Loss + TV Loss
