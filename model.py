@@ -19,13 +19,25 @@ class Generator(nn.Module):
         self.block4 = ResidualBlock(64)
         self.block5 = ResidualBlock(64)
         self.block6 = ResidualBlock(64)
-        self.block7 = nn.Sequential(
+        self.block7 = ResidualBlock(64)
+        self.block8 = ResidualBlock(64)
+        self.block9 = ResidualBlock(64)
+        self.block10 = ResidualBlock(64)
+        self.block11 = ResidualBlock(64)
+        self.block12 = ResidualBlock(64)
+        self.block13 = ResidualBlock(64)
+        self.block14 = ResidualBlock(64)
+        self.block15 = ResidualBlock(64)
+        self.block16 = ResidualBlock(64)
+        self.block17 = ResidualBlock(64)
+
+        self.block18 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64)
         )
-        block8 = [UpsampleBLock(64, 2) for _ in range(upsample_block_num)]
-        block8.append(nn.Conv2d(64, 3, kernel_size=9, padding=4))
-        self.block8 = nn.Sequential(*block8)
+        block19 = [UpsampleBLock(64, 2) for _ in range(upsample_block_num)]
+        block19.append(nn.Conv2d(64, 3, kernel_size=9, padding=4))
+        self.block19 = nn.Sequential(*block19)
 
     def forward(self, x):
         block1 = self.block1(x)
@@ -35,9 +47,20 @@ class Generator(nn.Module):
         block5 = self.block5(block4)
         block6 = self.block6(block5)
         block7 = self.block7(block6)
-        block8 = self.block8(block1 + block7)
+        block8 = self.block8(block7)
+        block9 = self.block9(block8)
+        block10 = self.block10(block9)
+        block11 = self.block11(block10)
+        block12 = self.block12(block11)
+        block13 = self.block13(block12)
+        block14 = self.block14(block13)
+        block15 = self.block15(block14)
+        block16 = self.block16(block15)
+        block17 = self.block17(block16)
+        block18 = self.block18(block17)
+        block19 = self.block19(block1 + block18)
 
-        return (F.tanh(block8) + 1) / 2
+        return (F.tanh(block19) + 1) / 2
 
 
 class Discriminator(nn.Module):

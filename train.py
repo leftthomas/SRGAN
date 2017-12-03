@@ -51,10 +51,8 @@ if torch.cuda.is_available():
     netD.cuda()
     generator_criterion.cuda()
 
-optimizerD = optim.Adam(netD.parameters())
-optimizerG = optim.Adam(netG.parameters())
-# optimizerD = optim.RMSprop(netD.parameters(), lr=1e-4)
-# optimizerG = optim.RMSprop(netG.parameters(), lr=1e-4)
+optimizerD = optim.Adam(netD.parameters(), lr=1e-4)
+optimizerG = optim.Adam(netG.parameters(), lr=1e-4)
 
 
 results = {'real_scores': [], 'fake_scores': [], 'd_loss': [], 'g_loss': [], 'psnr': [], 'ssim': []}
