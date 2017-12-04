@@ -97,11 +97,9 @@ class Discriminator(nn.Module):
             nn.Conv2d(512, 512, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2),
-
-            nn.AdaptiveAvgPool2d(1)
         )
         self.classifier = nn.Sequential(
-            nn.Linear(512, 1024),
+            nn.Linear(1024, 1024),
             nn.LeakyReLU(0.2),
             nn.Linear(1024, 1)
         )
