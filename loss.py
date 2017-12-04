@@ -21,10 +21,12 @@ class GeneratorLoss(nn.Module):
         # Image Loss
         image_loss = self.mse_loss(out_images, target_images)
         # TV Loss
-        tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
-                out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
+        # tv_loss = (((out_images[:, :, :-1, :] - out_images[:, :, 1:, :]) ** 2 + (
+        #         out_images[:, :, :, :-1] - out_images[:, :, :, 1:]) ** 2) ** 1.25).mean()
 
-        return image_loss + 1e-3 * adversarial_loss + 6e-3 * perception_loss + 2e-8 * tv_loss
+        # return image_loss + 1e-3 * adversarial_loss + 6e-3 * perception_loss + 2e-8 * tv_loss
+
+        return 1e-3 * adversarial_loss + 6e-3 * perception_loss
 
 
 if __name__ == "__main__":
