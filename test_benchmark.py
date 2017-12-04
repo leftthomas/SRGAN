@@ -30,7 +30,7 @@ data_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
 target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
 images_name = [x for x in listdir(data_path) if is_image_file(x)]
 
-model = Generator(UPSCALE_FACTOR)
+model = Generator(UPSCALE_FACTOR).eval()
 if torch.cuda.is_available():
     model = model.cuda()
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))

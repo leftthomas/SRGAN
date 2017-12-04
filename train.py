@@ -61,6 +61,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
     train_bar = tqdm(train_loader)
     running_results = {'real_scores': 0, 'fake_scores': 0, 'batch_sizes': 0, 'd_loss': 0, 'g_loss': 0}
 
+    netG.train()
     for data, target in train_bar:
         g_update_first = True
         batch_size = data.size(0)
@@ -125,7 +126,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
                                            running_results['g_loss'] / running_results['batch_sizes'],
                                            running_results['real_scores'] / running_results['batch_sizes'],
                                            running_results['fake_scores'] / running_results['batch_sizes']))
-
+    netG.eval()
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
