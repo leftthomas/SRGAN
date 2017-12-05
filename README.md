@@ -23,7 +23,7 @@ Download the datasets from [here](https://pan.baidu.com/s/1c17nfeo), and then ex
 python data_utils.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 3]
+--upscale_factor      super resolution upscale factor [default value is 4]
 ```
 to generate train and val datasets from VOC2012 with given upscale factors(options: 2、3、4、8).
 

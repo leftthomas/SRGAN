@@ -86,7 +86,7 @@ def generate_dataset(data_type, upscale_factor):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate Super Resolution Dataset')
-    parser.add_argument('--upscale_factor', default=3, type=int, help='super resolution upscale factor')
+    parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
     opt = parser.parse_args()
     UPSCALE_FACTOR = opt.upscale_factor
 
