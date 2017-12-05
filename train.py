@@ -95,6 +95,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
+        for p in netD.parameters():
+            p.data.clamp_(-0.01, 0.01)
+
         ############################
         # (2) Update G network: minimize log(1 - D(G(z))) + Perception Loss + Image Loss + TV Loss
         ###########################
