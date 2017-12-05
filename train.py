@@ -131,8 +131,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
             hr = hr.cuda()
         sr = netG(lr)
 
-        image = utils.make_grid(torch.stack([upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr), hr, sr], 1), nrow=3,
-                                padding=5)
+        image = utils.make_grid(
+            torch.stack([upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data), hr.data, sr.data], 1), nrow=3,
+            padding=5)
         utils.save_image(image.data.cpu(), out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
