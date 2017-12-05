@@ -132,9 +132,10 @@ for epoch in range(1, NUM_EPOCHS + 1):
         sr = netG(lr)
 
         image = utils.make_grid(
-            torch.stack([upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data), hr.data, sr.data], 1), nrow=3,
-            padding=5)
-        utils.save_image(image.data.cpu(), out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
+            torch.stack(
+                [upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data.cpu()).unsqueeze(1), hr.data.cpu().unsqueeze(1),
+                 sr.data.cpu().unsqueeze(1)], 1), nrow=3, padding=5)
+        utils.save_image(image, out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
         valing_results['mse'] += batch_mse * batch_size
