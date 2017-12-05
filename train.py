@@ -145,7 +145,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
              sr.data.cpu().squeeze(0)])
 
     val_images = torch.stack(val_images, 0)
-    val_images = torch.chunk(val_images, val_images.size(0) // 16)
+    val_images = torch.chunk(val_images, val_images.size(0) // 27)
     for index, image in enumerate(val_images):
         image = utils.make_grid(image, nrow=3, padding=5)
         utils.save_image(image, out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
