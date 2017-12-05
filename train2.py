@@ -17,7 +17,7 @@ from model import Generator, Discriminator
 train_args = {
     'train_batch_size': 64,
     'scale_factor': 4,  # should be power of 2
-    'train_set_path': '../SRGAN/data/train',
+    'train_set_path': '../SRGAN/data/train/image',
     'bsd100_path': '../SRGAN/data/BSD100',
     'set5_path': '../SRGAN/data/Set5',
     'set14_path': '../SRGAN/data/Set14',
