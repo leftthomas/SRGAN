@@ -99,7 +99,7 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(131072, 1024),
+            nn.Linear(32768, 1024),
             nn.LeakyReLU(0.2),
             nn.Linear(1024, 1)
         )
