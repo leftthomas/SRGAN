@@ -93,7 +93,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # (2) Update G network: minimize - D(G(z)) + Perception Loss + Image Loss + TV Loss
         ###########################
         index = 1
-        while ((real_out.data - fake_out.data > G_THRESHOLD) or g_update_first) and (
+        while ((real_out.data[0] - fake_out.data[0] > G_THRESHOLD) or g_update_first) and (
                 index <= G_STOP_THRESHOLD):
             netG.zero_grad()
             g_loss = generator_criterion(fake_out, fake_img, real_img)
