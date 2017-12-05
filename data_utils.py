@@ -56,7 +56,7 @@ class DatasetFromFolder(Dataset):
 
 def generate_dataset(data_type, upscale_factor):
     images_name = [x for x in listdir('data/VOC2012/' + data_type) if is_image_file(x)]
-    crop_size = calculate_valid_crop_size(120, upscale_factor)
+    crop_size = calculate_valid_crop_size(256, upscale_factor)
     lr_transform = input_transform(crop_size, upscale_factor)
     hr_transform = target_transform(crop_size)
 
