@@ -18,14 +18,7 @@ pip install tqdm
 ### Train、Val Dataset
 The train and val datasets are sampled from [VOC2012](http://cvlab.postech.ac.kr/~mooyeol/pascal_voc_2012/).
 Train dataset has 16700 images and Val dataset has 425 images.
-Download the datasets from [here](https://pan.baidu.com/s/1c17nfeo), and then extract it into `data` directory. Finally run
-```
-python data_utils.py
-
-optional arguments:
---upscale_factor      super resolution upscale factor [default value is 4]
-```
-to generate train and val datasets from VOC2012 with given upscale factors(options: 2、3、4、8).
+Download the datasets from [here](https://pan.baidu.com/s/1c17nfeo), and then extract it into `data` directory.
 
 ### Test Dataset
 The test dataset are sampled from 
@@ -44,6 +37,7 @@ Download the dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then ext
 python train.py
 
 optional arguments:
+--crop_size           super resolution crop size [default value is 72]
 --upscale_factor      super resolution upscale factor [default value is 4](choices:[2, 3, 4, 8])
 --g_threshold         super resolution generator update threshold [default value is 0.2](choices:[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
 --g_stop_threshold    super resolution generator update stop threshold [default value is 10](choices:[1, 10, 20, 30])
