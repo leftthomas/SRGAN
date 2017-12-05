@@ -83,7 +83,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         real_out = netD(real_img).mean()
         fake_out = netD(fake_img.detach()).mean()
         d_loss = fake_out - real_out
-        d_loss.backward()
+        d_loss.backward(retain_graph=True)
         optimizerD.step()
 
         for p in netD.parameters():
@@ -97,7 +97,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
                 index <= G_STOP_THRESHOLD):
             netG.zero_grad()
             g_loss = generator_criterion(fake_out, fake_img, real_img)
-            g_loss.backward(retain_graph=True)
+            g_loss.backward()
             optimizerG.step()
             fake_img = netG(z)
             fake_out = netD(fake_img.detach()).mean()
