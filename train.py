@@ -38,7 +38,7 @@ train_set = DatasetFromFolder('data/VOC2012/train', hr_transform=train_hr_transf
 val_set = DatasetFromFolder('data/VOC2012/val', hr_transform=val_hr_transform(CROP_SIZE),
                             lr_transform=lr_transform(CROP_SIZE, UPSCALE_FACTOR))
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
-val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=64, shuffle=False)
+val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=1, shuffle=False)
 
 netG = Generator(UPSCALE_FACTOR)
 print('# generator parameters:', sum(param.numel() for param in netG.parameters()))
@@ -118,9 +118,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     val_bar = tqdm(val_loader)
-    index = 1
     valing_results = {'mse': 0, 'ssims': 0, 'psnr': 0, 'ssim': 0, 'batch_sizes': 0}
-
+    val_images = []
     for val_data, val_target in val_bar:
         batch_size = val_data.size(0)
         valing_results['batch_sizes'] += batch_size
@@ -131,12 +130,6 @@ for epoch in range(1, NUM_EPOCHS + 1):
             hr = hr.cuda()
         sr = netG(lr)
 
-        image = utils.make_grid(
-            torch.stack(
-                [upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data.cpu()).unsqueeze(1), hr.data.cpu().unsqueeze(1),
-                 sr.data.cpu().unsqueeze(1)], 1), nrow=3, padding=5)
-        utils.save_image(image, out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
-
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
         valing_results['mse'] += batch_mse * batch_size
         batch_ssim = pytorch_ssim.ssim(sr, hr).data.cpu().numpy()
@@ -146,7 +139,16 @@ for epoch in range(1, NUM_EPOCHS + 1):
         val_bar.set_description(
             desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
                 valing_results['psnr'], valing_results['ssim']))
-        index += 1
+
+        val_images.extend(
+            [upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
+             sr.data.cpu().squeeze(0)])
+
+    val_images = torch.stack(val_images, 0)
+    val_images = torch.chunk(val_images, val_images.size(0) // 16)
+    for index, image in enumerate(val_images):
+        image = utils.make_grid(image, nrow=3, padding=5)
+        utils.save_image(image, out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
 
     # save model parameters
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
