@@ -17,7 +17,7 @@ class GeneratorLoss(nn.Module):
         # Adversarial Loss
         adversarial_loss = -torch.mean(out_labels)
         # Perception Loss
-        perception_loss = self.mse_loss(self.loss_network(out_images), self.loss_network(target_images).detach())
+        perception_loss = self.mse_loss(self.loss_network(out_images), self.loss_network(target_images))
         # Image Loss
         image_loss = self.mse_loss(out_images, target_images)
         # TV Loss

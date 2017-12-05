@@ -81,7 +81,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         netD.zero_grad()
         real_out = netD(real_img).mean()
-        fake_out = netD(fake_img.detach()).mean()
+        fake_out = netD(fake_img).mean()
         d_loss = fake_out - real_out
         d_loss.backward(retain_graph=True)
         optimizerD.step()
@@ -100,7 +100,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             g_loss.backward()
             optimizerG.step()
             fake_img = netG(z)
-            fake_out = netD(fake_img.detach()).mean()
+            fake_out = netD(fake_img).mean()
             g_update_first = False
             index += 1
 
@@ -131,7 +131,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
             hr = hr.cuda()
         sr = netG(lr)
 
-        image = utils.make_grid([upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr), hr, sr], nrow=8, padding=5)
+        image = utils.make_grid(torch.stack([upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr), hr, sr], 1), nrow=3,
+                                padding=5)
         utils.save_image(image.data.cpu(), out_path + 'epoch_%d_batch_%d.png' % (epoch, index), nrow=8, padding=5)
 
         batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
