@@ -119,7 +119,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         os.makedirs(out_path)
     val_bar = tqdm(val_loader)
     valing_results = {'mse': 0, 'ssims': 0, 'psnr': 0, 'ssim': 0, 'batch_sizes': 0}
-    index = 1
+    val_images = []
     for val_data, val_target in val_bar:
         batch_size = val_data.size(0)
         valing_results['batch_sizes'] += batch_size
@@ -140,11 +140,12 @@ for epoch in range(1, NUM_EPOCHS + 1):
             desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
                 valing_results['psnr'], valing_results['ssim']))
 
-        image = torch.stack([upscale_transform(CROP_SIZE)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
-                             sr.data.cpu().squeeze(0)])
-        image = utils.make_grid(image, nrow=3, padding=5)
-        utils.save_image(image, out_path + 'epoch_%d_batch_%d.png' % (epoch, index), padding=5)
-        index += 1
+        val_images.extend(
+            [upscale_transform(CROP_SIZE)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
+             sr.data.cpu().squeeze(0)])
+    val_images = torch.stack(val_images, 0)
+    val_images = utils.make_grid(val_images, nrow=3, padding=5)
+    utils.save_image(val_images, out_path + 'epoch_%d.png' % epoch, padding=5)
 
     # save model parameters
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
