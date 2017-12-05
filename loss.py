@@ -21,7 +21,7 @@ class GeneratorLoss(nn.Module):
         # Image Loss
         image_loss = self.mse_loss(out_images, target_images)
 
-        return image_loss + 1e-3 * adversarial_loss + 6e-6 * perception_loss
+        return image_loss + 1e-3 * adversarial_loss + 6e-3 * perception_loss
 
 
 if __name__ == "__main__":
