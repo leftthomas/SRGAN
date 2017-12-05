@@ -12,6 +12,7 @@ class GeneratorLoss(nn.Module):
             param.requires_grad = False
         self.loss_network = loss_network
         self.mse_loss = nn.MSELoss()
+        self.l1_loss = nn.L1Loss()
 
     def forward(self, out_labels, out_images, target_images):
         # Adversarial Loss
@@ -19,11 +20,9 @@ class GeneratorLoss(nn.Module):
         # Perception Loss
         perception_loss = self.mse_loss(self.loss_network(out_images), self.loss_network(target_images))
         # Image Loss
-        image_loss = self.mse_loss(out_images, target_images)
+        image_loss = self.l1_loss(out_images, target_images)
 
-        # return image_loss + 1e-3 * adversarial_loss + 6e-3 * perception_loss
-
-        return 1e-3 * adversarial_loss + perception_loss
+        return 170 * image_loss + adversarial_loss + 145 * perception_loss
 
 
 if __name__ == "__main__":
