@@ -41,3 +41,35 @@ class DatasetFromFolder(Dataset):
     def __len__(self):
         return len(self.image_filenames)
 
+
+class AvgMeter(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+class LRTransformTest(object):
+    def __init__(self, shrink_factor):
+        self.to_pil = ToPILImage()
+        self.to_tensor = ToTensor()
+        self.shrink_factor = shrink_factor
+
+    def __call__(self, hr_tensor):
+        hr_img = self.to_pil(hr_tensor)
+        w, h = hr_img.size
+        lr_scale = Scale(int(min(w, h) / self.shrink_factor), interpolation=3)
+        hr_scale = Scale(min(w, h), interpolation=3)
+        lr_img = lr_scale(hr_img)
+        hr_restore_img = hr_scale(lr_img)
+        return self.to_tensor(lr_img), self.to_tensor(hr_restore_img)
