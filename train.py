@@ -140,11 +140,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
             desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
                 valing_results['psnr'], valing_results['ssim']))
 
-        print(upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data.cpu().squeeze(0)).size())
-        print(hr.data.cpu().squeeze(0).size())
-        print(sr.data.cpu().squeeze(0).size())
         val_images.extend(
-            [upscale_transform(CROP_SIZE, UPSCALE_FACTOR)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
+            [upscale_transform(CROP_SIZE)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
              sr.data.cpu().squeeze(0)])
 
     val_images = torch.stack(val_images, 0)

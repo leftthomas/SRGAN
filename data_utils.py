@@ -32,10 +32,10 @@ def lr_transform(crop_size, upscale_factor):
     ])
 
 
-def upscale_transform(crop_size, upscale_factor):
+def upscale_transform(crop_size):
     return Compose([
         ToPILImage(),
-        Scale(upscale_factor * crop_size, interpolation=Image.BICUBIC),
+        Scale(crop_size, interpolation=Image.BICUBIC),
         ToTensor()
     ])
 
