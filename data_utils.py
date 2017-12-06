@@ -10,6 +10,10 @@ def is_image_file(filename):
     return any(filename.endswith(extension) for extension in ['.png', '.jpg', '.jpeg', '.PNG', '.JPG', '.JPEG'])
 
 
+def calculate_valid_crop_size(crop_size, upscale_factor):
+    return crop_size - (crop_size % upscale_factor)
+
+
 def train_hr_transform(crop_size):
     return Compose([
         RandomCrop(crop_size),
@@ -39,6 +43,7 @@ class TrainDatasetFromFolder(Dataset):
         super(TrainDatasetFromFolder, self).__init__()
         self.image_dir = dataset_dir
         self.image_filenames = [join(self.image_dir, x) for x in listdir(self.image_dir) if is_image_file(x)]
+        crop_size = calculate_valid_crop_size(crop_size, upscale_factor)
         self.hr_transform = train_hr_transform(crop_size)
         self.lr_transform = train_lr_transform(crop_size, upscale_factor)
 
@@ -61,8 +66,9 @@ class ValTestDatasetFromFolder(Dataset):
     def __getitem__(self, index):
         hr_image = Image.open(self.image_filenames[index])
         w, h = hr_image.size
-        lr_scale = Resize(min(w, h) // self.upscale_factor, interpolation=Image.BICUBIC)
-        hr_scale = Resize(min(w, h), interpolation=Image.BICUBIC)
+        crop_size = calculate_valid_crop_size(min(w, h), self.upscale_factor)
+        lr_scale = Resize(crop_size // self.upscale_factor, interpolation=Image.BICUBIC)
+        hr_scale = Resize(crop_size, interpolation=Image.BICUBIC)
         lr_image = lr_scale(hr_image)
         hr_restore_img = hr_scale(lr_image)
         return ToTensor()(lr_image), ToTensor()(hr_restore_img), ToTensor()(hr_image)
