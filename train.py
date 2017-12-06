@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import pytorch_ssim
-from data_utils import TrainDatasetFromFolder, ValDatasetFromFolder, val_display_transform
+from data_utils import TrainDatasetFromFolder, ValTestDatasetFromFolder, val_display_transform
 from loss import GeneratorLoss
 from model import Generator, Discriminator
 
@@ -34,7 +34,7 @@ G_THRESHOLD = opt.g_threshold
 G_STOP_THRESHOLD = opt.g_stop_threshold
 
 train_set = TrainDatasetFromFolder('data/VOC2012/train', crop_size=CROP_SIZE, upscale_factor=UPSCALE_FACTOR)
-val_set = ValDatasetFromFolder('data/VOC2012/val', upscale_factor=UPSCALE_FACTOR)
+val_set = ValTestDatasetFromFolder('data/VOC2012/val', upscale_factor=UPSCALE_FACTOR)
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
 val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=1, shuffle=False)
 

@@ -51,9 +51,9 @@ class TrainDatasetFromFolder(Dataset):
         return len(self.image_filenames)
 
 
-class ValDatasetFromFolder(Dataset):
+class ValTestDatasetFromFolder(Dataset):
     def __init__(self, dataset_dir, upscale_factor):
-        super(ValDatasetFromFolder, self).__init__()
+        super(ValTestDatasetFromFolder, self).__init__()
         self.image_dir = dataset_dir
         self.upscale_factor = upscale_factor
         self.image_filenames = [join(self.image_dir, x) for x in listdir(self.image_dir) if is_image_file(x)]
