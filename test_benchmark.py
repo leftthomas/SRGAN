@@ -1,18 +1,17 @@
 import argparse
 import os
 from math import log10
-from os import listdir
 
 import numpy as np
 import pandas as pd
 import torch
-from PIL import Image
+import torchvision.utils as utils
 from torch.autograd import Variable
-from torchvision.transforms import ToTensor, ToPILImage
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import pytorch_ssim
-from data_utils import is_image_file
+from data_utils import TestDatasetFromFolder, display_transform
 from model import Generator
 
 parser = argparse.ArgumentParser(description='Test Super Resolution')
@@ -26,34 +25,39 @@ MODEL_NAME = opt.model_name
 results = {'Set5': {'psnr': [], 'ssim': []}, 'Set14': {'psnr': [], 'ssim': []}, 'BSD100': {'psnr': [], 'ssim': []},
            'Urban100': {'psnr': [], 'ssim': []}, 'SunHays80': {'psnr': [], 'ssim': []}}
 
-data_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/data/'
-target_path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/target/'
-images_name = [x for x in listdir(data_path) if is_image_file(x)]
-
 model = Generator(UPSCALE_FACTOR).eval()
 if torch.cuda.is_available():
     model = model.cuda()
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
+test_set = TestDatasetFromFolder('data/test', upscale_factor=UPSCALE_FACTOR)
+test_loader = DataLoader(dataset=test_set, num_workers=4, batch_size=1, shuffle=False)
+test_bar = tqdm(test_loader, desc='test benchmark datasets')
+
 out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
 if not os.path.exists(out_path):
     os.makedirs(out_path)
-for image_name in tqdm(images_name, desc='convert LR images to SR images'):
 
-    image = Image.open(data_path + image_name)
-    image = Variable(ToTensor()(image), volatile=True).unsqueeze(0)
-    target = Image.open(target_path + image_name)
-    target = Variable(ToTensor()(target), volatile=True).unsqueeze(0)
+for image_name, lr_image, hr_restore_img, hr_image in test_bar:
+
+    lr_image = Variable(lr_image, volatile=True).unsqueeze(0)
+    hr_image = Variable(hr_image, volatile=True).unsqueeze(0)
     if torch.cuda.is_available():
-        image = image.cuda()
-        target = target.cuda()
+        lr_image = lr_image.cuda()
+        hr_image = hr_image.cuda()
 
-    out = model(image)
-    mse = ((target - out) ** 2).mean()
+    sr_image = model(lr_image)
+    mse = ((hr_image - sr_image) ** 2).mean()
     psnr = 10 * log10(1 / mse.data.cpu().numpy())
-    ssim = pytorch_ssim.ssim(out, target).data.cpu().numpy()
-    out_img = ToPILImage()(out[0].data.cpu())
-    out_img.save(out_path + 'psnr_%.4f_ssim_%.4f_' % (psnr, ssim) + image_name)
+    ssim = pytorch_ssim.ssim(sr_image, hr_image).data.cpu().numpy()
+
+    test_images = torch.stack(
+        [display_transform()(hr_restore_img.squeeze(0)), display_transform()(hr_image.data.cpu().squeeze(0)),
+         display_transform()(sr_image.data.cpu().squeeze(0))])
+    image = utils.make_grid(test_images, nrow=3, padding=5)
+    utils.save_image(image, out_path + image_name.split('.')[0] + '_psnr_%.4f_ssim_%.4f' % (psnr, ssim) +
+                     image_name.split('.')[-1], padding=5)
+
     # save psnr\ssim
     results[image_name.split('_')[0]]['psnr'].append(psnr)
     results[image_name.split('_')[0]]['ssim'].append(psnr)
