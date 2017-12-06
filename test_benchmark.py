@@ -40,8 +40,8 @@ if not os.path.exists(out_path):
 
 for image_name, lr_image, hr_restore_img, hr_image in test_bar:
 
-    lr_image = Variable(lr_image, volatile=True).unsqueeze(0)
-    hr_image = Variable(hr_image, volatile=True).unsqueeze(0)
+    lr_image = Variable(lr_image, volatile=True)
+    hr_image = Variable(hr_image, volatile=True)
     if torch.cuda.is_available():
         lr_image = lr_image.cuda()
         hr_image = hr_image.cuda()
