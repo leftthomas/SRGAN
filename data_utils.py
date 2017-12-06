@@ -3,7 +3,7 @@ from os.path import join
 
 from PIL import Image
 from torch.utils.data.dataset import Dataset
-from torchvision.transforms import Compose, Scale, RandomCrop, ToTensor, ToPILImage, CenterCrop
+from torchvision.transforms import Compose, RandomCrop, ToTensor, ToPILImage, CenterCrop, Resize
 
 
 def is_image_file(filename):
@@ -17,36 +17,30 @@ def train_hr_transform(crop_size):
     ])
 
 
-def val_hr_transform(crop_size):
-    return Compose([
-        CenterCrop(crop_size),
-        ToTensor(),
-    ])
-
-
-def lr_transform(crop_size, upscale_factor):
+def train_lr_transform(crop_size, upscale_factor):
     return Compose([
         ToPILImage(),
-        Scale(crop_size // upscale_factor, interpolation=Image.BICUBIC),
+        Resize(crop_size // upscale_factor, interpolation=Image.BICUBIC),
         ToTensor()
     ])
 
 
-def upscale_transform(crop_size):
+def val_display_transform():
     return Compose([
         ToPILImage(),
-        Scale(crop_size, interpolation=Image.BICUBIC),
+        Resize(400),
+        CenterCrop(400),
         ToTensor()
     ])
 
 
-class DatasetFromFolder(Dataset):
-    def __init__(self, dataset_dir, hr_transform, lr_transform):
-        super(DatasetFromFolder, self).__init__()
+class TrainDatasetFromFolder(Dataset):
+    def __init__(self, dataset_dir, crop_size, upscale_factor):
+        super(TrainDatasetFromFolder, self).__init__()
         self.image_dir = dataset_dir
         self.image_filenames = [join(self.image_dir, x) for x in listdir(self.image_dir) if is_image_file(x)]
-        self.hr_transform = hr_transform
-        self.lr_transform = lr_transform
+        self.hr_transform = train_hr_transform(crop_size)
+        self.lr_transform = train_lr_transform(crop_size, upscale_factor)
 
     def __getitem__(self, index):
         hr_image = self.hr_transform(Image.open(self.image_filenames[index]))
@@ -56,3 +50,22 @@ class DatasetFromFolder(Dataset):
     def __len__(self):
         return len(self.image_filenames)
 
+
+class ValDatasetFromFolder(Dataset):
+    def __init__(self, dataset_dir, upscale_factor):
+        super(ValDatasetFromFolder, self).__init__()
+        self.image_dir = dataset_dir
+        self.upscale_factor = upscale_factor
+        self.image_filenames = [join(self.image_dir, x) for x in listdir(self.image_dir) if is_image_file(x)]
+
+    def __getitem__(self, index):
+        hr_image = Image.open(self.image_filenames[index])
+        w, h = hr_image.size
+        lr_scale = Resize(min(w, h) // self.upscale_factor, interpolation=Image.BICUBIC)
+        hr_scale = Resize(min(w, h), interpolation=Image.BICUBIC)
+        lr_image = lr_scale(hr_image)
+        hr_restore_img = hr_scale(lr_image)
+        return ToTensor()(lr_image), ToTensor()(hr_restore_img), ToTensor()(hr_image)
+
+    def __len__(self):
+        return len(self.image_filenames)

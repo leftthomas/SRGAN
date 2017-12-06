@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import pytorch_ssim
-from data_utils import DatasetFromFolder, train_hr_transform, val_hr_transform, lr_transform, upscale_transform
+from data_utils import TrainDatasetFromFolder, ValDatasetFromFolder, val_display_transform
 from loss import GeneratorLoss
 from model import Generator, Discriminator
 
@@ -33,10 +33,8 @@ NUM_EPOCHS = opt.num_epochs
 G_THRESHOLD = opt.g_threshold
 G_STOP_THRESHOLD = opt.g_stop_threshold
 
-train_set = DatasetFromFolder('data/VOC2012/train', hr_transform=train_hr_transform(CROP_SIZE),
-                              lr_transform=lr_transform(CROP_SIZE, UPSCALE_FACTOR))
-val_set = DatasetFromFolder('data/VOC2012/val', hr_transform=val_hr_transform(CROP_SIZE),
-                            lr_transform=lr_transform(CROP_SIZE, UPSCALE_FACTOR))
+train_set = TrainDatasetFromFolder('data/VOC2012/train', crop_size=CROP_SIZE, upscale_factor=UPSCALE_FACTOR)
+val_set = ValDatasetFromFolder('data/VOC2012/val', upscale_factor=UPSCALE_FACTOR)
 train_loader = DataLoader(dataset=train_set, num_workers=4, batch_size=64, shuffle=True)
 val_loader = DataLoader(dataset=val_set, num_workers=4, batch_size=1, shuffle=False)
 
@@ -120,11 +118,11 @@ for epoch in range(1, NUM_EPOCHS + 1):
     val_bar = tqdm(val_loader)
     valing_results = {'mse': 0, 'ssims': 0, 'psnr': 0, 'ssim': 0, 'batch_sizes': 0}
     val_images = []
-    for val_data, val_target in val_bar:
-        batch_size = val_data.size(0)
+    for val_lr, val_hr_restore, val_hr in val_bar:
+        batch_size = val_lr.size(0)
         valing_results['batch_sizes'] += batch_size
-        lr = Variable(val_data, volatile=True)
-        hr = Variable(val_target, volatile=True)
+        lr = Variable(val_lr, volatile=True)
+        hr = Variable(val_hr, volatile=True)
         if torch.cuda.is_available():
             lr = lr.cuda()
             hr = hr.cuda()
@@ -141,11 +139,13 @@ for epoch in range(1, NUM_EPOCHS + 1):
                 valing_results['psnr'], valing_results['ssim']))
 
         val_images.extend(
-            [upscale_transform(CROP_SIZE)(lr.data.cpu().squeeze(0)), hr.data.cpu().squeeze(0),
-             sr.data.cpu().squeeze(0)])
-    val_images = torch.stack(val_images, 0)
-    val_images = utils.make_grid(val_images, nrow=3, padding=5)
-    utils.save_image(val_images, out_path + 'epoch_%d.png' % epoch, padding=5)
+            [val_display_transform()(lr.data.cpu().squeeze(0)), val_display_transform()(hr.data.cpu().squeeze(0)),
+             val_display_transform()(sr.data.cpu().squeeze(0))])
+    val_images = torch.stack(val_images)
+    val_images = torch.chunk(val_images, 15)
+    for index, image in enumerate(val_images):
+        image = utils.make_grid(image, nrow=3, padding=5)
+        utils.save_image(image, out_path + 'epoch_%d_index_%d.png' % (epoch, index), padding=5)
 
     # save model parameters
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
