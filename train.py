@@ -139,7 +139,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
                 valing_results['psnr'], valing_results['ssim']))
 
         val_images.extend(
-            [val_display_transform()(lr.data.cpu().squeeze(0)), val_display_transform()(hr.data.cpu().squeeze(0)),
+            [val_display_transform()(val_hr_restore.squeeze(0)), val_display_transform()(hr.data.cpu().squeeze(0)),
              val_display_transform()(sr.data.cpu().squeeze(0))])
     val_images = torch.stack(val_images)
     val_images = torch.chunk(val_images, 15)
