@@ -60,7 +60,7 @@ for image_name, lr_image, hr_restore_img, hr_image in test_bar:
 
     # save psnr\ssim
     results[image_name.split('_')[0]]['psnr'].append(psnr)
-    results[image_name.split('_')[0]]['ssim'].append(psnr)
+    results[image_name.split('_')[0]]['ssim'].append(ssim)
 
 out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
 if not os.path.exists(out_path):
