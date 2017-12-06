@@ -143,7 +143,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
              val_display_transform()(sr.data.cpu().squeeze(0))])
     val_images = torch.stack(val_images)
     val_images = torch.chunk(val_images, 15)
-    val_save_bar = tqdm(val_images, desc='saving grid of images...')
+    val_save_bar = tqdm(val_images, desc='[saving grid of images...]')
     index = 1
     for image in val_save_bar:
         image = utils.make_grid(image, nrow=3, padding=5)
