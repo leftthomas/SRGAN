@@ -39,7 +39,7 @@ if not os.path.exists(out_path):
     os.makedirs(out_path)
 
 for image_name, lr_image, hr_restore_img, hr_image in test_bar:
-
+    image_name = image_name[0]
     lr_image = Variable(lr_image, volatile=True)
     hr_image = Variable(hr_image, volatile=True)
     if torch.cuda.is_available():
