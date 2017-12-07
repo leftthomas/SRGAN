@@ -17,7 +17,7 @@ from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--crop_size', default=72, type=int, help='super resolution crop size')
-parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 3, 4, 8],
+parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 4, 8],
                     help='super resolution upscale factor')
 parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                     help='super resolution generator update threshold')
@@ -154,7 +154,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
     torch.save(netG.state_dict(), 'epochs/netG_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     torch.save(netD.state_dict(), 'epochs/netD_epoch_%d_%d.pth' % (UPSCALE_FACTOR, epoch))
     # save loss\scores\psnr\ssim
-    results['g_loss'].append(running_results['g_loss'] / running_results['g_loss'])
+    results['g_loss'].append(running_results['g_loss'] / running_results['batch_sizes'])
     results['d_loss'].append(running_results['d_loss'] / running_results['batch_sizes'])
     results['psnr'].append(valing_results['psnr'])
     results['ssim'].append(valing_results['ssim'])

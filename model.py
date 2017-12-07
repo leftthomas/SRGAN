@@ -6,8 +6,7 @@ from torch import nn
 
 class Generator(nn.Module):
     def __init__(self, scale_factor):
-        upsample_block_num = math.log(scale_factor, 2)
-        upsample_block_num = int(upsample_block_num)
+        upsample_block_num = int(math.log(scale_factor, 2))
 
         super(Generator, self).__init__()
         self.block1 = nn.Sequential(
