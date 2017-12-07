@@ -67,7 +67,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         running_results['batch_sizes'] += batch_size
 
         ############################
-        # (1) Update D network: minimize D(G(z)) - D(x)
+        # (1) Update D network: maximize log(D(x))+log(1-D(G(z)))
         ###########################
         real_img = Variable(target)
         if torch.cuda.is_available():
@@ -80,7 +80,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         netD.zero_grad()
         real_out = netD(real_img).mean()
         fake_out = netD(fake_img).mean()
-        d_loss = fake_out - real_out
+        d_loss = - (torch.log(real_out) + torch.log(1 - fake_out))
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
@@ -88,7 +88,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             p.data.clamp_(-0.01, 0.01)
 
         ############################
-        # (2) Update G network: minimize - D(G(z)) + Perception Loss + Image Loss + TV Loss
+        # (2) Update G network: minimize log(1-D(G(z))) + Perception Loss + Image Loss + TV Loss
         ###########################
         index = 1
         while ((real_out.data[0] - fake_out.data[0] > G_THRESHOLD) or g_update_first) and (
@@ -107,9 +107,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
         d_loss = fake_out - real_out
         running_results['d_loss'] += d_loss.data[0] * batch_size
 
-        train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f' % (
+        train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f' % (
             epoch, NUM_EPOCHS, running_results['d_loss'] / running_results['batch_sizes'],
-            running_results['g_loss'] / running_results['batch_sizes']))
+            running_results['g_loss'] / running_results['batch_sizes'], real_out.data[0], fake_out.data[0]))
 
     netG.eval()
     out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
