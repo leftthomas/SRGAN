@@ -104,7 +104,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         g_loss = generator_criterion(fake_out, fake_img, real_img)
         running_results['g_loss'] += g_loss.data[0] * batch_size
-        d_loss = fake_out - real_out
+        d_loss = - (torch.log(real_out) + torch.log(1 - fake_out))
         running_results['d_loss'] += d_loss.data[0] * batch_size
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f' % (
