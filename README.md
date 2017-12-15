@@ -1,5 +1,6 @@
 # SRGAN
-A PyTorch implementation of xxxxxx based on xxxxx paper [xxxxx](xxxxx)
+A PyTorch implementation of SRGAN based on the paper 
+[Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network](https://arxiv.org/pdf/1609.04802.pdf)
 
 ## Requirements
 - [Anaconda](https://www.anaconda.com/download/)
@@ -11,6 +12,10 @@ conda install pytorch torchvision cuda80 -c soumith # install it if you have ins
 - tqdm
 ```
 pip install tqdm
+```
+- opencv
+```
+conda install -c conda-forge opencv
 ```
 
 ## Datasets
@@ -64,6 +69,18 @@ optional arguments:
 --model_name          super resolution model name [default value is netG_epoch_4_100.pth]
 ```
 The output super resolution images are on the same directory.
+
+### Test Video
+```
+python test_video.py
+
+optional arguments:
+--upscale_factor      super resolution upscale factor [default value is 4]
+--is_real_time        super resolution real time to show [default value is False]
+--delay_time          super resolution delay time to show [default value is 1]
+--model_name          super resolution model name [default value is netG_epoch_4_100.pth]
+```
+The output high resolution videos are on `results` directory.
 
 ## Benchmarks
 The reconstructions of the digit numbers are showed at right and the ground truth at left.
