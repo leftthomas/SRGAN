@@ -1,4 +1,4 @@
-# FCCapsNet
+# SRGAN
 A PyTorch implementation of xxxxxx based on xxxxx paper [xxxxx](xxxxx)
 
 ## Requirements
@@ -56,7 +56,7 @@ The output super resolution images are on `results` directory.
 
 ### Test Single Image
 ```
-python test_single.py
+python test_image.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 4]
