@@ -43,8 +43,8 @@ python train.py
 optional arguments:
 --crop_size           super resolution crop size [default value is 72]
 --upscale_factor      super resolution upscale factor [default value is 4](choices:[2, 4, 8])
---g_threshold         super resolution generator update threshold [default value is 0.2](choices:[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
---g_stop_threshold    super resolution generator update stop threshold [default value is 10](choices:[1, 10, 20, 30])
+--g_threshold         super resolution generator update threshold [default value is 0.3](choices:[0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+--g_stop_threshold    super resolution generator update stop threshold [default value is 2](choices:[1, 2, 3])
 --num_epochs          super resolution epochs number [default value is 100]
 ```
 The output val super resolution images are on `images` directory.

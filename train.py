@@ -16,12 +16,12 @@ from loss import GeneratorLoss
 from model import Generator, Discriminator
 
 parser = argparse.ArgumentParser(description='Train Super Resolution')
-parser.add_argument('--crop_size', default=72, type=int, help='super resolution crop size')
+parser.add_argument('--crop_size', default=96, type=int, help='super resolution crop size')
 parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 4, 8],
                     help='super resolution upscale factor')
-parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+parser.add_argument('--g_threshold', default=0.3, type=float, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
                     help='super resolution generator update threshold')
-parser.add_argument('--g_stop_threshold', default=10, type=int, choices=[1, 10, 20, 30],
+parser.add_argument('--g_stop_threshold', default=2, type=int, choices=[1, 2, 3],
                     help='super resolution generator update stop threshold')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
 
@@ -67,7 +67,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         running_results['batch_sizes'] += batch_size
 
         ############################
-        # (1) Update D network: maximize D(x)+1-D(G(z))
+        # (1) Update D network: maximize D(x)-1-D(G(z))
         ###########################
         real_img = Variable(target)
         if torch.cuda.is_available():
@@ -80,7 +80,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         netD.zero_grad()
         real_out = netD(real_img).mean()
         fake_out = netD(fake_img).mean()
-        d_loss = - real_out - 1 + fake_out
+        d_loss = 1 - real_out + fake_out
         d_loss.backward(retain_graph=True)
         optimizerD.step()
 
@@ -101,7 +101,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
 
         g_loss = generator_criterion(fake_out, fake_img, real_img)
         running_results['g_loss'] += g_loss.data[0] * batch_size
-        d_loss = - real_out - 1 + fake_out
+        d_loss = 1 - real_out + fake_out
         running_results['d_loss'] += d_loss.data[0] * batch_size
 
         train_bar.set_description(desc='[%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f' % (
