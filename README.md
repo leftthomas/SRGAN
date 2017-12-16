@@ -6,8 +6,7 @@ A PyTorch implementation of SRGAN based on the paper
 - [Anaconda](https://www.anaconda.com/download/)
 - PyTorch
 ```
-conda install pytorch torchvision -c soumith
-conda install pytorch torchvision cuda80 -c soumith # install it if you have installed cuda
+conda install pytorch torchvision -c pytorch
 ```
 - tqdm
 ```
@@ -15,7 +14,7 @@ pip install tqdm
 ```
 - opencv
 ```
-conda install -c conda-forge opencv
+conda install -c anaconda opencv
 ```
 
 ## Datasets
