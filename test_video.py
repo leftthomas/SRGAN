@@ -16,8 +16,6 @@ from model import Generator
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
     parser.add_argument('--upscale_factor', default=4, type=int, help='super resolution upscale factor')
-    parser.add_argument('--is_real_time', default=False, type=bool, help='super resolution real time to show')
-    parser.add_argument('--delay_time', default=1, type=int, help='super resolution delay time to show')
     parser.add_argument('--model_name', default='netG_epoch_4_100.pth', type=str, help='super resolution model name')
     opt = parser.parse_args()
 
@@ -55,16 +53,9 @@ if __name__ == "__main__":
                 image = image.cuda()
 
             out = model(image).cpu().data[0].numpy()
-            out *= 255.0
-            out_img = Image.fromarray(np.uint8(out), mode='RGB')
+            out_img = Image.fromarray(out, mode='RGB')
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
-
-            if IS_REAL_TIME:
-                cv2.imshow('LR Video ', frame)
-                cv2.imshow('SR Video ', out_img)
-                cv2.waitKey(DELAY_TIME)
-            else:
-                # save video
-                videoWriter.write(out_img)
+            # save video
+            videoWriter.write(out_img)
             # next frame
             success, frame = videoCapture.read()
