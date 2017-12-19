@@ -50,6 +50,8 @@ if __name__ == "__main__":
                 image = image.cuda()
 
             out = model(image).cpu().data[0]
+            out *= 255
+            out = out.int()
             out_img = ToPILImage()(out)
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
             # save video
