@@ -3,7 +3,6 @@ import os
 from os import listdir
 
 import cv2
-import numpy as np
 import torch
 from PIL import Image
 from torch.autograd import Variable
@@ -56,7 +55,7 @@ if __name__ == "__main__":
 
             out = model(image)
             out_img = out.cpu().data[0].numpy()
-            out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
+            out_img = cv2.cvtColor(out_img, cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
                 cv2.imshow('LR Video ', frame)
