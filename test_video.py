@@ -3,8 +3,10 @@ import argparse
 import cv2
 import numpy as np
 import torch
+import torchvision.transforms as transforms
+from PIL import Image
 from torch.autograd import Variable
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, ToPILImage
 
 from model import Generator
 
@@ -31,6 +33,7 @@ if __name__ == "__main__":
     size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
             int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
     videoWriter = cv2.VideoWriter('out_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
+    videoWriter2 = cv2.VideoWriter('compare_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
     # read frame
     success, frame = videoCapture.read()
     while success:
@@ -43,7 +46,25 @@ if __name__ == "__main__":
         out_img = out.data[0].numpy()
         out_img *= 255.0
         out_img = (np.uint8(out_img)).transpose((1, 2, 0))
-        # save video
+        # save sr video
         videoWriter.write(out_img)
+
+        out_img = ToPILImage()(out_img)
+        crop_out_imgs = transforms.FiveCrop(size=out_img.width // 5 - 9)(out_img)
+        crop_out_imgs = [np.asarray(transforms.Pad(padding=(10, 5, 0, 0))(img)) for img in crop_out_imgs]
+        out_img = transforms.Pad(padding=(5, 0, 0, 5))(out_img)
+        compared_img = transforms.Resize(size=(size[1], size[0]), interpolation=Image.BICUBIC)(ToPILImage()(frame))
+        crop_compared_imgs = transforms.FiveCrop(size=compared_img.width // 5 - 9)(compared_img)
+        crop_compared_imgs = [np.asarray(transforms.Pad(padding=(0, 5, 10, 0))(img)) for img in crop_compared_imgs]
+        compared_img = transforms.Pad(padding=(0, 0, 5, 5))(compared_img)
+
+        top_image = np.concatenate((np.asarray(compared_img), np.asarray(out_img)), axis=1)
+        bottom_image = np.concatenate(crop_compared_imgs + crop_out_imgs, axis=1)
+        bottom_image = np.asarray(transforms.Resize(
+            size=(int(top_image.shape[1] / bottom_image.shape[1] * bottom_image.shape[0]), top_image.shape[1]))(
+            ToPILImage()(bottom_image)))
+        final_image = np.concatenate((top_image, bottom_image))
+        # save compared video
+        videoWriter2.write(final_image)
         # next frame
         success, frame = videoCapture.read()
