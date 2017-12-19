@@ -20,8 +20,6 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     UPSCALE_FACTOR = opt.upscale_factor
-    IS_REAL_TIME = opt.is_real_time
-    DELAY_TIME = opt.delay_time
     MODEL_NAME = opt.model_name
 
     path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/video/'
@@ -38,12 +36,11 @@ if __name__ == "__main__":
         os.makedirs(out_path)
     for video_name in tqdm(videos_name, desc='convert LR videos to HR videos'):
         videoCapture = cv2.VideoCapture(path + video_name)
-        if not IS_REAL_TIME:
-            fps = videoCapture.get(cv2.CAP_PROP_FPS)
-            size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
-                    int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
-            output_name = out_path + video_name.split('.')[0] + '.avi'
-            videoWriter = cv2.VideoWriter(output_name, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
+        fps = videoCapture.get(cv2.CAP_PROP_FPS)
+        size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
+                int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
+        output_name = out_path + video_name.split('.')[0] + '.avi'
+        videoWriter = cv2.VideoWriter(output_name, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
         # read frame
         success, frame = videoCapture.read()
         while success:
