@@ -20,6 +20,8 @@ MODEL_NAME = opt.model_name
 model = Generator(UPSCALE_FACTOR).eval()
 if torch.cuda.is_available():
     model = model.cuda()
+# for cpu
+# model.load_state_dict(torch.load('epochs/' + MODEL_NAME, map_location=lambda storage, loc: storage))
 model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
 image = Image.open(IMAGE_NAME)

@@ -1,9 +1,8 @@
 import argparse
 
+import cv2
 import numpy as np
-import skvideo.io
 import torch
-from PIL import Image
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor
 
@@ -20,23 +19,31 @@ if __name__ == "__main__":
     VIDEO_NAME = opt.video_name
     MODEL_NAME = opt.model_name
 
-    model = Generator(UPSCALE_FACTOR)
+    model = Generator(UPSCALE_FACTOR).eval()
     if torch.cuda.is_available():
         model = model.cuda()
     # for cpu
     # model.load_state_dict(torch.load('epochs/' + MODEL_NAME, map_location=lambda storage, loc: storage))
     model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
-    video = skvideo.io.vreader(VIDEO_NAME)
-    images = []
-    for frame in video:
-        image = Image.fromarray(frame)
-        image = Variable(ToTensor()(image)).unsqueeze(dim=0)
+    videoCapture = cv2.VideoCapture(VIDEO_NAME)
+    fps = videoCapture.get(cv2.CAP_PROP_FPS)
+    size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
+            int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
+    videoWriter = cv2.VideoWriter('out_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
+    # read frame
+    success, frame = videoCapture.read()
+    while success:
+        image = Variable(ToTensor()(frame), volatile=True).unsqueeze(0)
         if torch.cuda.is_available():
             image = image.cuda()
 
-        out = model(image).cpu().data[0].numpy() * 255
-        out_img = out.astype(np.uint8)
-        images.append(out_img)
-    # save video
-    skvideo.io.vwrite('out_' + VIDEO_NAME, np.array(images))
+        out = model(image)
+        out = out.cpu()
+        out_img = out.data[0].numpy()
+        out_img *= 255.0
+        out_img = (np.uint8(out_img)).transpose((1, 2, 0))
+        # save video
+        videoWriter.write(out_img)
+        # next frame
+        success, frame = videoCapture.read()
