@@ -3,6 +3,7 @@ import os
 from os import listdir
 
 import cv2
+import numpy as np
 import torch
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor
@@ -53,6 +54,7 @@ if __name__ == "__main__":
 
             out = model(image)
             out_img = out.cpu().data[0].numpy()
+            out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
                 cv2.imshow('LR Video ', frame)
