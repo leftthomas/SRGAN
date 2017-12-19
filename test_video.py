@@ -3,6 +3,7 @@ import os
 from os import listdir
 
 import cv2
+import numpy as np
 import torch
 from PIL import Image
 from torch.autograd import Variable
@@ -55,6 +56,8 @@ if __name__ == "__main__":
 
             out = model(image)
             out_img = out.cpu().data[0].numpy()
+            out_img *= 255.0
+            out_img = np.uint8(out_img)
             out_img = cv2.cvtColor(out_img, cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
