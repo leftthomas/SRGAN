@@ -51,7 +51,6 @@ if __name__ == "__main__":
 
             out = model(image).cpu().data[0]
             out_img = ToPILImage()(out)
-            out_img.show()
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
             # save video
             videoWriter.write(out_img)
