@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
             out = model(image).cpu().data[0].numpy()
             out *= 255.0
-            out_img = Image.fromarray(np.uint8(out))
+            out_img = Image.fromarray(np.uint8(out), mode='RGB')
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
