@@ -11,7 +11,7 @@ from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
 from data_utils import is_video_file
-from model import Net
+from model import Generator
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test Super Resolution')
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     path = 'data/test/SRF_' + str(UPSCALE_FACTOR) + '/video/'
     videos_name = [x for x in listdir(path) if is_video_file(x)]
-    model = Net(upscale_factor=UPSCALE_FACTOR)
+    model = Generator(UPSCALE_FACTOR)
     if torch.cuda.is_available():
         model = model.cuda()
     # for cpu
@@ -49,21 +49,13 @@ if __name__ == "__main__":
         # read frame
         success, frame = videoCapture.read()
         while success:
-            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).convert('YCbCr')
-            y, cb, cr = img.split()
-            image = Variable(ToTensor()(y)).view(1, -1, y.size[1], y.size[0])
+            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            image = Variable(ToTensor()(img)).unsqueeze(dim=0)
             if torch.cuda.is_available():
                 image = image.cuda()
 
             out = model(image)
-            out = out.cpu()
-            out_img_y = out.data[0].numpy()
-            out_img_y *= 255.0
-            out_img_y = out_img_y.clip(0, 255)
-            out_img_y = Image.fromarray(np.uint8(out_img_y[0]), mode='L')
-            out_img_cb = cb.resize(out_img_y.size, Image.BICUBIC)
-            out_img_cr = cr.resize(out_img_y.size, Image.BICUBIC)
-            out_img = Image.merge('YCbCr', [out_img_y, out_img_cb, out_img_cr]).convert('RGB')
+            out_img = out.cpu().data[0].numpy()
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
