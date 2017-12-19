@@ -75,9 +75,10 @@ python test_video.py
 
 optional arguments:
 --upscale_factor      super resolution upscale factor [default value is 4]
+--video_name          low resolution video name
 --model_name          super resolution model name [default value is netG_epoch_4_100.pth]
 ```
-The output high resolution videos are on `results` directory.
+The output high resolution videos are on the same directory.
 
 ## Benchmarks
 The reconstructions of the digit numbers are showed at right and the ground truth at left.
