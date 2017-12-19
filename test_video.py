@@ -5,6 +5,7 @@ from os import listdir
 import cv2
 import numpy as np
 import torch
+from PIL import Image
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor
 from tqdm import tqdm
@@ -48,12 +49,14 @@ if __name__ == "__main__":
         # read frame
         success, frame = videoCapture.read()
         while success:
-            image = Variable(ToTensor()(frame)).unsqueeze(dim=0)
+            image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            image = Variable(ToTensor()(image)).unsqueeze(dim=0)
             if torch.cuda.is_available():
                 image = image.cuda()
 
-            out = model(image)
-            out_img = out.cpu().data[0].numpy()
+            out = model(image).cpu().data[0].numpy()
+            out *= 255.0
+            out_img = Image.fromarray(np.uint8(out))
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
 
             if IS_REAL_TIME:
