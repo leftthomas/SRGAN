@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from PIL import Image
 from torch.autograd import Variable
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, ToPILImage
 from tqdm import tqdm
 
 from data_utils import is_video_file
@@ -49,8 +49,9 @@ if __name__ == "__main__":
             if torch.cuda.is_available():
                 image = image.cuda()
 
-            out = model(image).cpu().data[0].numpy()
-            out_img = Image.fromarray(out, mode='RGB')
+            out = model(image).cpu().data[0]
+            out_img = ToPILImage()(out)
+            out_img.show()
             out_img = cv2.cvtColor(np.asarray(out_img), cv2.COLOR_RGB2BGR)
             # save video
             videoWriter.write(out_img)
