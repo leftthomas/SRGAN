@@ -30,10 +30,15 @@ if __name__ == "__main__":
 
     videoCapture = cv2.VideoCapture(VIDEO_NAME)
     fps = videoCapture.get(cv2.CAP_PROP_FPS)
-    size = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
-            int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
-    videoWriter = cv2.VideoWriter('out_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
-    videoWriter2 = cv2.VideoWriter('compare_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size)
+    size1 = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR),
+             int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR)
+    size2 = (int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR * 2 + 10),
+             int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)) * UPSCALE_FACTOR + 10 + int(
+                 int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR * 2 + 10) / int(
+                     10 * int(int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR) // 5 + 1)) * int(
+                     int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR) // 5 - 9)))
+    videoWriter = cv2.VideoWriter('out_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size1)
+    videoWriter2 = cv2.VideoWriter('compare_' + VIDEO_NAME, cv2.VideoWriter_fourcc(*'MPEG'), fps, size2)
     # read frame
     success, frame = videoCapture.read()
     while success:
@@ -53,7 +58,7 @@ if __name__ == "__main__":
         crop_out_imgs = transforms.FiveCrop(size=out_img.width // 5 - 9)(out_img)
         crop_out_imgs = [np.asarray(transforms.Pad(padding=(10, 5, 0, 0))(img)) for img in crop_out_imgs]
         out_img = transforms.Pad(padding=(5, 0, 0, 5))(out_img)
-        compared_img = transforms.Resize(size=(size[1], size[0]), interpolation=Image.BICUBIC)(ToPILImage()(frame))
+        compared_img = transforms.Resize(size=(size1[1], size1[0]), interpolation=Image.BICUBIC)(ToPILImage()(frame))
         crop_compared_imgs = transforms.FiveCrop(size=compared_img.width // 5 - 9)(compared_img)
         crop_compared_imgs = [np.asarray(transforms.Pad(padding=(0, 5, 10, 0))(img)) for img in crop_compared_imgs]
         compared_img = transforms.Pad(padding=(0, 0, 5, 5))(compared_img)
