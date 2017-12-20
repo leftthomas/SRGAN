@@ -14,7 +14,7 @@ pip install tqdm
 ```
 - opencv
 ```
-conda install -c anaconda opencv
+conda install -c conda-forge opencv
 ```
 
 ## Datasets

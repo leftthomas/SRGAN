@@ -31,4 +31,4 @@ if torch.cuda.is_available():
 
 out = model(image)
 out_img = ToPILImage()(out[0].data.cpu())
-out_img.save('out_' + IMAGE_NAME)
+out_img.save('out_srf_' + str(UPSCALE_FACTOR) + '_' + IMAGE_NAME)
