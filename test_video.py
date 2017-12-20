@@ -38,10 +38,11 @@ if __name__ == "__main__":
                                    10 * int(int(
                                        videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR) // 5 + 1)) * int(
                                    int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH) * UPSCALE_FACTOR) // 5 - 9)))
-    sr_video_writer = cv2.VideoWriter('out_srf_' + str(UPSCALE_FACTOR) + '_' + VIDEO_NAME,
-                                      cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, sr_video_size)
-    compared_video_writer = cv2.VideoWriter('compare_srf_' + str(UPSCALE_FACTOR) + '_' + VIDEO_NAME,
-                                            cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, compared_video_size)
+    output_sr_name = 'out_srf_' + str(UPSCALE_FACTOR) + '_' + VIDEO_NAME.split('.')[0] + '.avi'
+    output_compared_name = 'compare_srf_' + str(UPSCALE_FACTOR) + '_' + VIDEO_NAME.split('.')[0] + '.avi'
+    sr_video_writer = cv2.VideoWriter(output_sr_name, cv2.VideoWriter_fourcc('M', 'P', 'E', 'G'), fps, sr_video_size)
+    compared_video_writer = cv2.VideoWriter(output_compared_name, cv2.VideoWriter_fourcc('M', 'P', 'E', 'G'), fps,
+                                            compared_video_size)
     # read frame
     success, frame = videoCapture.read()
     while success:
