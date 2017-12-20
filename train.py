@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--crop_size', default=88, type=int, help='super resolution crop size')
 parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 4, 8],
                     help='super resolution upscale factor')
-parser.add_argument('--g_threshold', default=0.3, type=float, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
+parser.add_argument('--g_threshold', default=0.4, type=float, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
                     help='super resolution generator update threshold')
 parser.add_argument('--g_stop_threshold', default=2, type=int, choices=[1, 2, 3],
                     help='super resolution generator update stop threshold')
