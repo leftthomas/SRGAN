@@ -113,7 +113,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
             running_results['g_score'] / running_results['batch_sizes']))
 
     netG.eval()
-    out_path = 'images/SRF_' + str(UPSCALE_FACTOR) + '/'
+    out_path = 'training_results/SRF_' + str(UPSCALE_FACTOR) + '/'
     if not os.path.exists(out_path):
         os.makedirs(out_path)
     val_bar = tqdm(val_loader)
@@ -163,11 +163,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
     results['ssim'].append(valing_results['ssim'])
 
     if epoch % 10 == 0 and epoch != 0:
-        out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
-        if not os.path.exists(out_path):
-            os.makedirs(out_path)
+        out_path = 'statistics/'
         data_frame = pd.DataFrame(
             data={'Loss_D': results['d_loss'], 'Loss_G': results['g_loss'], 'Score_D': results['d_score'],
                   'Score_G': results['g_score'], 'PSNR': results['psnr'], 'SSIM': results['ssim']},
             index=range(1, epoch + 1))
-        data_frame.to_csv(out_path + 'train_results.csv', index_label='Epoch')
+        data_frame.to_csv(out_path + 'srf_' + str(UPSCALE_FACTOR) + '_train_results.csv', index_label='Epoch')

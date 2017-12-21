@@ -34,7 +34,7 @@ test_set = TestDatasetFromFolder('data/test', upscale_factor=UPSCALE_FACTOR)
 test_loader = DataLoader(dataset=test_set, num_workers=4, batch_size=1, shuffle=False)
 test_bar = tqdm(test_loader, desc='[testing benchmark datasets]')
 
-out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
+out_path = 'benchmark_results/SRF_' + str(UPSCALE_FACTOR) + '/'
 if not os.path.exists(out_path):
     os.makedirs(out_path)
 
@@ -62,10 +62,7 @@ for image_name, lr_image, hr_restore_img, hr_image in test_bar:
     results[image_name.split('_')[0]]['psnr'].append(psnr)
     results[image_name.split('_')[0]]['ssim'].append(ssim)
 
-out_path = 'statistics/SRF_' + str(UPSCALE_FACTOR) + '/'
-if not os.path.exists(out_path):
-    os.makedirs(out_path)
-
+out_path = 'statistics/'
 saved_results = {'psnr': [], 'ssim': []}
 for item in results.values():
     psnr = np.array(item['psnr'])
@@ -80,4 +77,4 @@ for item in results.values():
     saved_results['ssim'].append(ssim)
 
 data_frame = pd.DataFrame(saved_results, results.keys())
-data_frame.to_csv(out_path + 'test_results.csv', index_label='DataSet')
+data_frame.to_csv(out_path + 'srf_' + str(UPSCALE_FACTOR) + '_test_results.csv', index_label='DataSet')
