@@ -40,45 +40,45 @@ Download the dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then ext
 python train.py
 
 optional arguments:
---crop_size           super resolution crop size [default value is 88]
---upscale_factor      super resolution upscale factor [default value is 4](choices:[2, 4, 8])
---g_threshold         super resolution generator update threshold [default value is 0.2](choices:[0.1, 0.2, 0.3, 0.4, 0.5])
---g_stop_threshold    super resolution generator update stop threshold [default value is 2](choices:[1, 2, 3, 4, 5])
---num_epochs          super resolution epochs number [default value is 100]
+--crop_size                   training images crop size [default value is 88]
+--upscale_factor              super resolution upscale factor [default value is 4](choices:[2, 4, 8])
+--g_trigger_threshold         generator update trigger threshold [default value is 0.2](choices:[0.1, 0.2, 0.3, 0.4, 0.5])
+--g_update_number             generator update number [default value is 2](choices:[1, 2, 3, 4, 5])
+--num_epochs                  train epoch number [default value is 100]
 ```
-The output val super resolution images are on `images` directory.
+The output val super resolution images are on `training_results` directory.
 
-### Test Benchmark Images
+### Test Benchmark Datasets
 ```
 python test_benchmark.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 4]
---model_name          super resolution model name [default value is netG_epoch_4_100.pth]
+--upscale_factor              super resolution upscale factor [default value is 4]
+--model_name                  generator model epoch name [default value is netG_epoch_4_100.pth]
 ```
-The output super resolution images are on `results` directory.
+The output super resolution images are on `benchmark_results` directory.
 
 ### Test Single Image
 ```
 python test_image.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 4]
---image_name          low resolution image name
---model_name          super resolution model name [default value is netG_epoch_4_100.pth]
+--upscale_factor              super resolution upscale factor [default value is 4]
+--image_name                  test low resolution image name
+--model_name                  generator model epoch name [default value is netG_epoch_4_100.pth]
 ```
-The output super resolution images are on the same directory.
+The output super resolution image are on the same directory.
 
-### Test Video
+### Test Single Video
 ```
 python test_video.py
 
 optional arguments:
---upscale_factor      super resolution upscale factor [default value is 4]
---video_name          low resolution video name
---model_name          super resolution model name [default value is netG_epoch_4_100.pth]
+--upscale_factor              super resolution upscale factor [default value is 4]
+--video_name                  test low resolution video name
+--model_name                  generator model epoch name [default value is netG_epoch_4_100.pth]
 ```
-The output high resolution videos are on the same directory.
+The output super resolution video and compared video are on the same directory.
 
 ## Benchmarks
 The reconstructions of the digit numbers are showed at right and the ground truth at left.

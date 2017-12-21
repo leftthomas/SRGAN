@@ -15,23 +15,23 @@ from data_utils import TrainDatasetFromFolder, ValDatasetFromFolder, display_tra
 from loss import GeneratorLoss
 from model import Generator, Discriminator
 
-parser = argparse.ArgumentParser(description='Train Super Resolution')
-parser.add_argument('--crop_size', default=88, type=int, help='super resolution crop size')
+parser = argparse.ArgumentParser(description='Train Super Resolution Models')
+parser.add_argument('--crop_size', default=88, type=int, help='training images crop size')
 parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 4, 8],
                     help='super resolution upscale factor')
-parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0.1, 0.2, 0.3, 0.4, 0.5],
-                    help='super resolution generator update threshold')
-parser.add_argument('--g_stop_threshold', default=2, type=int, choices=[1, 2, 3, 4, 5],
-                    help='super resolution generator update stop threshold')
-parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
+parser.add_argument('--g_trigger_threshold', default=0.2, type=float, choices=[0.1, 0.2, 0.3, 0.4, 0.5],
+                    help='generator update trigger threshold')
+parser.add_argument('--g_update_number', default=2, type=int, choices=[1, 2, 3, 4, 5],
+                    help='generator update number')
+parser.add_argument('--num_epochs', default=100, type=int, help='train epoch number')
 
 opt = parser.parse_args()
 
 CROP_SIZE = opt.crop_size
 UPSCALE_FACTOR = opt.upscale_factor
 NUM_EPOCHS = opt.num_epochs
-G_THRESHOLD = opt.g_threshold
-G_STOP_THRESHOLD = opt.g_stop_threshold
+G_TRIGGER_THRESHOLD = opt.g_trigger_threshold
+G_UPDATE_NUMBER = opt.g_update_number
 
 train_set = TrainDatasetFromFolder('data/VOC2012/train', crop_size=CROP_SIZE, upscale_factor=UPSCALE_FACTOR)
 val_set = ValDatasetFromFolder('data/VOC2012/val', upscale_factor=UPSCALE_FACTOR)
@@ -88,8 +88,8 @@ for epoch in range(1, NUM_EPOCHS + 1):
         # (2) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss + TV Loss
         ###########################
         index = 1
-        while ((real_out.data[0] - fake_out.data[0] > G_THRESHOLD) or g_update_first) and (
-                index <= G_STOP_THRESHOLD):
+        while ((real_out.data[0] - fake_out.data[0] > G_TRIGGER_THRESHOLD) or g_update_first) and (
+                index <= G_UPDATE_NUMBER):
             netG.zero_grad()
             g_loss = generator_criterion(fake_out, fake_img, real_img)
             g_loss.backward()
@@ -144,7 +144,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
              display_transform()(sr.data.cpu().squeeze(0))])
     val_images = torch.stack(val_images)
     val_images = torch.chunk(val_images, val_images.size(0) // 15)
-    val_save_bar = tqdm(val_images, desc='[saving grid of images]')
+    val_save_bar = tqdm(val_images, desc='[saving training results]')
     index = 1
     for image in val_save_bar:
         image = utils.make_grid(image, nrow=3, padding=5)
