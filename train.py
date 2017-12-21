@@ -19,9 +19,9 @@ parser = argparse.ArgumentParser(description='Train Super Resolution')
 parser.add_argument('--crop_size', default=88, type=int, help='super resolution crop size')
 parser.add_argument('--upscale_factor', default=4, type=int, choices=[2, 4, 8],
                     help='super resolution upscale factor')
-parser.add_argument('--g_threshold', default=0.4, type=float, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
+parser.add_argument('--g_threshold', default=0.2, type=float, choices=[0.1, 0.2, 0.3, 0.4, 0.5],
                     help='super resolution generator update threshold')
-parser.add_argument('--g_stop_threshold', default=2, type=int, choices=[1, 2, 3],
+parser.add_argument('--g_stop_threshold', default=2, type=int, choices=[1, 2, 3, 4, 5],
                     help='super resolution generator update stop threshold')
 parser.add_argument('--num_epochs', default=100, type=int, help='super resolution epochs number')
 
@@ -129,9 +129,9 @@ for epoch in range(1, NUM_EPOCHS + 1):
             hr = hr.cuda()
         sr = netG(lr)
 
-        batch_mse = ((sr - hr) ** 2).mean().data.cpu().numpy()
+        batch_mse = ((sr - hr) ** 2).data.mean()
         valing_results['mse'] += batch_mse * batch_size
-        batch_ssim = pytorch_ssim.ssim(sr, hr).data.cpu().numpy()
+        batch_ssim = pytorch_ssim.ssim(sr, hr).data[0]
         valing_results['ssims'] += batch_ssim * batch_size
         valing_results['psnr'] = 10 * log10(1 / (valing_results['mse'] / valing_results['batch_sizes']))
         valing_results['ssim'] = valing_results['ssims'] / valing_results['batch_sizes']
