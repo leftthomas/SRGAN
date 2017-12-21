@@ -47,9 +47,9 @@ for image_name, lr_image, hr_restore_img, hr_image in test_bar:
         hr_image = hr_image.cuda()
 
     sr_image = model(lr_image)
-    mse = ((hr_image - sr_image) ** 2).mean()
-    psnr = 10 * log10(1 / mse.data.cpu().numpy())
-    ssim = pytorch_ssim.ssim(sr_image, hr_image).data.cpu().numpy()
+    mse = ((hr_image - sr_image) ** 2).data.mean()
+    psnr = 10 * log10(1 / mse)
+    ssim = pytorch_ssim.ssim(sr_image, hr_image).data[0]
 
     test_images = torch.stack(
         [display_transform()(hr_restore_img.squeeze(0)), display_transform()(hr_image.data.cpu().squeeze(0)),
