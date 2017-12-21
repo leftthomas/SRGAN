@@ -32,7 +32,7 @@ model.load_state_dict(torch.load('epochs/' + MODEL_NAME))
 
 test_set = TestDatasetFromFolder('data/test', upscale_factor=UPSCALE_FACTOR)
 test_loader = DataLoader(dataset=test_set, num_workers=4, batch_size=1, shuffle=False)
-test_bar = tqdm(test_loader, desc='test benchmark datasets')
+test_bar = tqdm(test_loader, desc='[testing benchmark datasets]')
 
 out_path = 'results/SRF_' + str(UPSCALE_FACTOR) + '/'
 if not os.path.exists(out_path):

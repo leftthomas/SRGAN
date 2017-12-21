@@ -136,7 +136,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         valing_results['psnr'] = 10 * log10(1 / (valing_results['mse'] / valing_results['batch_sizes']))
         valing_results['ssim'] = valing_results['ssims'] / valing_results['batch_sizes']
         val_bar.set_description(
-            desc='[convert LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
+            desc='[converting LR images to SR images] PSNR: %.4f dB SSIM: %.4f' % (
                 valing_results['psnr'], valing_results['ssim']))
 
         val_images.extend(
@@ -144,7 +144,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
              display_transform()(sr.data.cpu().squeeze(0))])
     val_images = torch.stack(val_images)
     val_images = torch.chunk(val_images, val_images.size(0) // 15)
-    val_save_bar = tqdm(val_images, desc='[saving grid of images...]')
+    val_save_bar = tqdm(val_images, desc='[saving grid of images]')
     index = 1
     for image in val_save_bar:
         image = utils.make_grid(image, nrow=3, padding=5)
