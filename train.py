@@ -85,7 +85,7 @@ for epoch in range(1, NUM_EPOCHS + 1):
         optimizerD.step()
 
         ############################
-        # (2) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss + TV Loss
+        # (2) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss
         ###########################
         index = 1
         while ((real_out.data[0] - fake_out.data[0] > G_TRIGGER_THRESHOLD) or g_update_first) and (
