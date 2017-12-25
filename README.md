@@ -24,14 +24,18 @@ The train and val datasets are sampled from [VOC2012](http://cvlab.postech.ac.kr
 Train dataset has 16700 images and Val dataset has 425 images.
 Download the datasets from [here](https://pan.baidu.com/s/1c17nfeo), and then extract it into `data` directory.
 
-### Test Dataset
-The test dataset are sampled from 
+### Test Image Dataset
+The test image dataset are sampled from 
 | **Set 5** |  [Bevilacqua et al. BMVC 2012](http://people.rennes.inria.fr/Aline.Roumy/results/SR_BMVC12.html)
 | **Set 14** |  [Zeyde et al. LNCS 2010](https://sites.google.com/site/romanzeyde/research-interests)
 | **BSD 100** | [Martin et al. ICCV 2001](https://www.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/)
 | **Sun-Hays 80** | [Sun and Hays ICCP 2012](http://cs.brown.edu/~lbsun/SRproj2012/SR_iccp2012.html)
 | **Urban 100** | [Huang et al. CVPR 2015](https://sites.google.com/site/jbhuang0604/publications/struct_sr).
-Download the dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then extract it into `data` directory.
+Download the image dataset from [here](https://pan.baidu.com/s/1nuGyn8l), and then extract it into `data` directory.
+
+### Test Video Dataset
+The test video dataset are three trailers. Download the video dataset from 
+[here](https://pan.baidu.com/s/1dEHwNnj).
 
 ## Usage
 
@@ -81,18 +85,102 @@ optional arguments:
 The output super resolution video and compared video are on the same directory.
 
 ## Benchmarks
-The reconstructions of the digit numbers are showed at right and the ground truth at left.
-<table>
-  <tr>
-    <td>
-     <img src="results/ground_truth.jpg"/>
-    </td>
-    <td>
-     <img src="results/reconstruction.jpg"/>
-    </td>
-  </tr>
-</table>
+**Upscale Factor = 2**
 
-Default PyTorch Adam optimizer hyperparameters were used with no learning rate scheduling. 
-Epochs with batch size of 100 takes ~2 minutes on a NVIDIA GTX 1070 GPU. 
+Epochs with batch size of 64 takes ~2 minute 30 seconds on a NVIDIA GTX 1080Ti GPU. 
+
+> Image Results
+
+The left is bicubic interpolation image, the middle is high resolution image, and 
+the right is super resolution image(output of the SRGAN).
+
+- BSD100_070(PSNR:32.4517; SSIM:0.9191)
+
+![BSD100_070](images/1.png)
+
+- Set14_005(PSNR:26.9171; SSIM:0.9119)
+
+![Set14_005](images/2.png)
+
+- Set14_013(PSNR:30.8040; SSIM:0.9651)
+
+![Set14_013](images/3.png)
+
+- Urban100_098(PSNR:24.3765; SSIM:0.7855)
+
+![Urban100_098](images/4.png)
+
+> Video Results
+
+The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
+Click the image to watch the complete video.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/05vx-vOJOZs" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+
+**Upscale Factor = 4**
+
+Epochs with batch size of 64 takes ~4 minute 30 seconds on a NVIDIA GTX 1080Ti GPU. 
+
+> Image Results
+
+The left is bicubic interpolation image, the middle is high resolution image, and 
+the right is super resolution image(output of the SRGAN).
+
+- BSD100_035(PSNR:32.3980; SSIM:0.8512)
+
+![BSD100_035](images/5.png)
+
+- Set14_011(PSNR:29.5944; SSIM:0.9044)
+
+![Set14_011](images/6.png)
+
+- Set14_014(PSNR:25.1299; SSIM:0.7406)
+
+![Set14_014](images/7.png)
+
+- Urban100_060(PSNR:20.7129; SSIM:0.5263)
+
+![Urban100_060](images/8.png)
+
+> Video Results
+
+The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
+Click the image to watch the complete video.
+
+[![Watch the video](images/video_SRF_2.png)](http://v.youku.com/v_show/id_XMzIwMDEyODU2MA==.html?spm=a2hzp.8244740.0.0)
+
+**Upscale Factor = 8**
+
+Epochs with batch size of 64 takes ~3 minute 30 seconds on a NVIDIA GTX 1080Ti GPU. 
+
+> Image Results
+
+The left is bicubic interpolation image, the middle is high resolution image, and 
+the right is super resolution image(output of the SRGAN).
+
+- SunHays80_027(PSNR:29.4941; SSIM:0.8082)
+
+![SunHays80_027](images/9.png)
+
+- SunHays80_035(PSNR:32.1546; SSIM:0.8449)
+
+![SunHays80_035](images/10.png)
+
+- SunHays80_043(PSNR:30.9716; SSIM:0.8789)
+
+![SunHays80_043](images/11.png)
+
+- SunHays80_078(PSNR:31.9351; SSIM:0.8381)
+
+![SunHays80_078](images/12.png)
+
+> Video Results
+
+The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
+Click the image to watch the complete video.
+
+[![Watch the video](images/video_SRF_2.png)](http://v.youku.com/v_show/id_XMzIwMDEyODU2MA==.html?spm=a2hzp.8244740.0.0)
+
+The complete test image results could be downloaded from [here](https://pan.baidu.com/s/1eS5x5HC), and 
+the complete test video results could be downloaded from [here](https://pan.baidu.com/s/1bZIvKU).
 
