@@ -113,7 +113,6 @@ the right is super resolution image(output of the SRGAN).
 > Video Results
 
 The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
-Click the image to watch the complete video.
 
 [![Watch the video](images/video_SRF_2.png)](https://youtu.be/05vx-vOJOZs)
 
@@ -145,7 +144,6 @@ the right is super resolution image(output of the SRGAN).
 > Video Results
 
 The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
-Click the image to watch the complete video.
 
 [![Watch the video](images/video_SRF_4.png)](https://youtu.be/tNR2eiMeoQs)
 
@@ -177,9 +175,8 @@ the right is super resolution image(output of the SRGAN).
 > Video Results
 
 The left is bicubic interpolation video, the right is super resolution video(output of the SRGAN).
-Click the image to watch the complete video.
 
-[![Watch the video](images/video_SRF_8.png)](http://v.youku.com/v_show/id_XMzIwMDEyODU2MA==.html?spm=a2hzp.8244740.0.0)
+[![Watch the video](images/video_SRF_8.png)](https://youtu.be/EuvXTKCRr8I)
 
-The complete test results could be downloaded from [here](https://pan.baidu.com/s/1eS5x5HC).
+The complete test results could be downloaded from [here](https://pan.baidu.com/s/1qXTRC8c).
 
