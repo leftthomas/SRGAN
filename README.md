@@ -68,6 +68,7 @@ python test_image.py
 
 optional arguments:
 --upscale_factor              super resolution upscale factor [default value is 4]
+--test_mode                   using GPU or CPU [default value is 'GPU'](choices:['GPU', 'CPU'])
 --image_name                  test low resolution image name
 --model_name                  generator model epoch name [default value is netG_epoch_4_100.pth]
 ```
