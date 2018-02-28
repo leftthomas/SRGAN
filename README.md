@@ -10,11 +10,11 @@ conda install pytorch torchvision -c pytorch
 ```
 - tqdm
 ```
-pip install tqdm
+conda install tqdm
 ```
 - opencv
 ```
-conda install -c conda-forge opencv
+conda install opencv
 ```
 
 ## Datasets
