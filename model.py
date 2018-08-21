@@ -2,7 +2,7 @@ import math
 
 import torch.nn.functional as F
 from torch import nn
-
+#babyjia
 
 class Generator(nn.Module):
     def __init__(self, scale_factor):
