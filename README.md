@@ -8,14 +8,6 @@ A PyTorch implementation of SRGAN based on CVPR 2017 paper
 ```
 conda install pytorch torchvision -c pytorch
 ```
-- tqdm
-```
-conda install tqdm
-```
-- opencv
-```
-conda install opencv
-```
 
 ## Datasets
 
