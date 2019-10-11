@@ -1,6 +1,5 @@
 import math
-
-import torch.nn.functional as F
+import torch
 from torch import nn
 
 
@@ -82,7 +81,7 @@ class Discriminator(nn.Module):
 
     def forward(self, x):
         batch_size = x.size(0)
-        return F.sigmoid(self.net(x).view(batch_size))
+        return torch.tanh(self.net(x).view(batch_size))
 
 
 class ResidualBlock(nn.Module):
