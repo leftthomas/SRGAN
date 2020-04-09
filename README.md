@@ -173,5 +173,5 @@ The left is bicubic interpolation video, the right is super resolution video(out
 
 [![Watch the video](images/video_SRF_8.png)](https://youtu.be/EuvXTKCRr8I)
 
-The complete test results could be downloaded from [here](https://pan.baidu.com/s/1DfL8ANbUqfSHB_qH-Wkatw)(access code:ist8).
+The complete test results could be downloaded from [here](https://pan.baidu.com/s/1tpi-X6KMrUM15zKTH7f_WQ)(access code:nkh9).
 
