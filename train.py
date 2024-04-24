@@ -84,7 +84,7 @@ if __name__ == '__main__':
             # (2) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss + TV Loss
             ###########################
             netG.zero_grad()
-            ## The two lines below are added to prevent runetime error in Google Colab ##
+            ## The two lines below are added to prevent runtime error in Google Colab ##
             fake_img = netG(z)
             fake_out = netD(fake_img).mean()
             ##
