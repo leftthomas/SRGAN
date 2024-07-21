@@ -6,7 +6,6 @@ import pandas as pd
 import torch.optim as optim
 import torch.utils.data
 import torchvision.utils as utils
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -61,41 +60,38 @@ if __name__ == '__main__':
             g_update_first = True
             batch_size = data.size(0)
             running_results['batch_sizes'] += batch_size
-    
+
             ############################
-            # (1) Update D network: maximize D(x)-1-D(G(z))
+            # (1) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss + TV Loss
             ###########################
-            real_img = Variable(target)
+            real_img = target
             if torch.cuda.is_available():
-                real_img = real_img.cuda()
-            z = Variable(data)
+                real_img = real_img.float().cuda()
+            z = data
             if torch.cuda.is_available():
-                z = z.cuda()
-            fake_img = netG(z)
-    
-            netD.zero_grad()
-            real_out = netD(real_img).mean()
-            fake_out = netD(fake_img).mean()
-            d_loss = 1 - real_out + fake_out
-            d_loss.backward(retain_graph=True)
-            optimizerD.step()
-    
-            ############################
-            # (2) Update G network: minimize 1-D(G(z)) + Perception Loss + Image Loss + TV Loss
-            ###########################
-            netG.zero_grad()
-            ## The two lines below are added to prevent runtime error in Google Colab ##
+                z = z.float().cuda()
             fake_img = netG(z)
             fake_out = netD(fake_img).mean()
-            ##
+
+            optimizerG.zero_grad()
             g_loss = generator_criterion(fake_out, fake_img, real_img)
             g_loss.backward()
+            optimizerG.step()
+
+            ############################
+            # (2) Update D network: maximize D(x)-1-D(G(z))
+            ###########################
+            real_out = netD(real_img).mean()
+            fake_out = netD(fake_img.detach()).mean()
+            d_loss = 1 - real_out + fake_out
+
+            optimizerD.zero_grad()
+            d_loss.backward()
             
             fake_img = netG(z)
             fake_out = netD(fake_img).mean()
-            
-            
-            optimizerG.step()
+
+            optimizerD.step()
 
             # loss for current batch before optimization 
             running_results['g_loss'] += g_loss.item() * batch_size
@@ -124,8 +120,8 @@ if __name__ == '__main__':
                 lr = val_lr
                 hr = val_hr
                 if torch.cuda.is_available():
-                    lr = lr.cuda()
-                    hr = hr.cuda()
+                    lr = lr.float().cuda()
+                    hr = hr.float().cuda()
                 sr = netG(lr)
         
                 batch_mse = ((sr - hr) ** 2).data.mean()
